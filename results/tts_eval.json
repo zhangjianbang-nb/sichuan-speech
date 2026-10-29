@@ -1,0 +1,360 @@
+{
+ "anchor_real_sichuan": {
+  "acoustic": {
+   "dur": 6.992,
+   "f0_med_semi": 14.436,
+   "f0_range": 9.556,
+   "f0_std": 3.698,
+   "fall_frac": 0.561,
+   "rate_syl_s": 4.669,
+   "n": 40
+  },
+  "mean_cer": 0.0767
+ },
+ "anchor_real_mandarin": {
+  "acoustic": {
+   "dur": 4.741,
+   "f0_med_semi": 4.703,
+   "f0_range": 8.767,
+   "f0_std": 3.41,
+   "fall_frac": 0.639,
+   "rate_syl_s": 3.723,
+   "n": 40
+  },
+  "mean_cer": 0.0297
+ },
+ "base_mandarin_prompt": {
+  "mean_cer": 0.0612,
+  "acoustic": {
+   "dur": 3.605,
+   "f0_med_semi": 17.42,
+   "f0_range": 9.551,
+   "f0_std": 3.533,
+   "fall_frac": 0.558,
+   "rate_syl_s": 5.366,
+   "n": 10
+  },
+  "rows": [
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/00_0.wav",
+    "ref": "今天天气好安逸哦，我们出去耍一哈嘛。",
+    "hyp": "今天天气好哎逸哟我们出去耍一下嘛",
+    "cer": 0.1875
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/01_0.wav",
+    "ref": "你吃饭没有得？没得的话我们一起切吃火锅。",
+    "hyp": "你吃饭没有得没得的话我们一起切吃火锅",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/02_0.wav",
+    "ref": "这个事情我晓得，你莫着急，慢慢来。",
+    "hyp": "这个事情我晓得你莫着急慢慢来",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/03_0.wav",
+    "ref": "老板儿，来二两小面，多放点海椒。",
+    "hyp": "老板儿来尔良小面多放点海椒",
+    "cer": 0.1538
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/04_0.wav",
+    "ref": "你娃儿最近在忙啥子嘛？",
+    "hyp": "你娃儿最近在忙啥子吗",
+    "cer": 0.1
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/05_0.wav",
+    "ref": "昨晚上那个雨下得才大哦，裤子都打湿完了。",
+    "hyp": "昨晚上那个雨下的才大哦裤子都打湿完了",
+    "cer": 0.0556
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/06_0.wav",
+    "ref": "这个菜巴适得板，再给我舀一碗饭。",
+    "hyp": "这个菜八是得板再给我舀一碗饭",
+    "cer": 0.1429
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/07_0.wav",
+    "ref": "莫慌，等我把这个事情搞归一了再说。",
+    "hyp": "莫慌等我把这个事情搞归一了再说",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/08_0.wav",
+    "ref": "他屋头那个猫儿又跑到房顶上去了。",
+    "hyp": "他屋头那个猫儿又跑到房顶上去了",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_mandarin_prompt/09_0.wav",
+    "ref": "我们是四川人，说话就是这个味道。",
+    "hyp": "我们是四川人说话就是这个味道",
+    "cer": 0.0
+   }
+  ]
+ },
+ "base_sichuan_prompt": {
+  "mean_cer": 0.1497,
+  "acoustic": {
+   "dur": 3.794,
+   "f0_med_semi": 14.7,
+   "f0_range": 10.522,
+   "f0_std": 4.148,
+   "fall_frac": 0.525,
+   "rate_syl_s": 4.646,
+   "n": 10
+  },
+  "rows": [
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/00_0.wav",
+    "ref": "今天天气好安逸哦，我们出去耍一哈嘛。",
+    "hyp": "今天天气好哎哟我们出去耍一下嘛",
+    "cer": 0.25
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/01_0.wav",
+    "ref": "你吃饭没有得？没得的话我们一起切吃火锅。",
+    "hyp": "你吃饭没有得没得的会我们一起去吃火锅",
+    "cer": 0.1111
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/02_0.wav",
+    "ref": "这个事情我晓得，你莫着急，慢慢来。",
+    "hyp": "这个事情我晓得你莫着急慢慢来",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/03_0.wav",
+    "ref": "老板儿，来二两小面，多放点海椒。",
+    "hyp": "老板啊来二两小米多放点海椒",
+    "cer": 0.1538
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/04_0.wav",
+    "ref": "你娃儿最近在忙啥子嘛？",
+    "hyp": "牛尔最近在忙啥子嘛",
+    "cer": 0.3
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/05_0.wav",
+    "ref": "昨晚上那个雨下得才大哦，裤子都打湿完了。",
+    "hyp": "昨晚上那个雨下的才大哦裤子都打湿完了",
+    "cer": 0.0556
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/06_0.wav",
+    "ref": "这个菜巴适得板，再给我舀一碗饭。",
+    "hyp": "这个菜八十得吧再给我要一碗饭",
+    "cer": 0.2857
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/07_0.wav",
+    "ref": "莫慌，等我把这个事情搞归一了再说。",
+    "hyp": "莫慌等我把这个事情搞鬼以来再说",
+    "cer": 0.2
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/08_0.wav",
+    "ref": "他屋头那个猫儿又跑到房顶上去了。",
+    "hyp": "还捂头那个猫儿又跑到房顶上去了",
+    "cer": 0.1333
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/base_sichuan_prompt/09_0.wav",
+    "ref": "我们是四川人，说话就是这个味道。",
+    "hyp": "我们是四川说话就是这个味道",
+    "cer": 0.0714
+   }
+  ]
+ },
+ "sft_female": {
+  "mean_cer": 0.0748,
+  "acoustic": {
+   "dur": 2.941,
+   "f0_med_semi": 16.59,
+   "f0_range": 8.818,
+   "f0_std": 3.394,
+   "fall_frac": 0.537,
+   "rate_syl_s": 5.16,
+   "n": 10
+  },
+  "rows": [
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/00_0.wav",
+    "ref": "今天天气好安逸哦，我们出去耍一哈嘛。",
+    "hyp": "今天天气好安逸哟我们出去耍一哈嘛",
+    "cer": 0.0625
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/01_0.wav",
+    "ref": "你吃饭没有得？没得的话我们一起切吃火锅。",
+    "hyp": "你吃饭没有得没得的话我们一起去吃火锅",
+    "cer": 0.0556
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/02_0.wav",
+    "ref": "这个事情我晓得，你莫着急，慢慢来。",
+    "hyp": "这个事情我晓得你莫着急慢慢来",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/03_0.wav",
+    "ref": "老板儿，来二两小面，多放点海椒。",
+    "hyp": "老板儿来二两小面多放点嗨叫",
+    "cer": 0.1538
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/04_0.wav",
+    "ref": "你娃儿最近在忙啥子嘛？",
+    "hyp": "你娃儿最近在忙啥子吗",
+    "cer": 0.1
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/05_0.wav",
+    "ref": "昨晚上那个雨下得才大哦，裤子都打湿完了。",
+    "hyp": "昨晚上嘞个雨下得才大哦裤子都打湿完了",
+    "cer": 0.0556
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/06_0.wav",
+    "ref": "这个菜巴适得板，再给我舀一碗饭。",
+    "hyp": "这个菜巴适的吧再给我舀一碗饭",
+    "cer": 0.1429
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/07_0.wav",
+    "ref": "莫慌，等我把这个事情搞归一了再说。",
+    "hyp": "莫慌等我把这个事情搞鬼一脑再说",
+    "cer": 0.1333
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/08_0.wav",
+    "ref": "他屋头那个猫儿又跑到房顶上去了。",
+    "hyp": "他屋头那个猫又跑到房顶上去了",
+    "cer": 0.0667
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_female/09_0.wav",
+    "ref": "我们是四川人，说话就是这个味道。",
+    "hyp": "我们是四川人说话就是这个味道",
+    "cer": 0.0
+   }
+  ]
+ },
+ "sft_avg": {
+  "mean_cer": 0.0748,
+  "acoustic": {
+   "dur": 2.841,
+   "f0_med_semi": 15.4,
+   "f0_range": 7.521,
+   "f0_std": 3.065,
+   "fall_frac": 0.513,
+   "rate_syl_s": 4.723,
+   "n": 10
+  },
+  "rows": [
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/00_0.wav",
+    "ref": "今天天气好安逸哦，我们出去耍一哈嘛。",
+    "hyp": "今天天气好安逸哟我们出去耍一哈嘛",
+    "cer": 0.0625
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/01_0.wav",
+    "ref": "你吃饭没有得？没得的话我们一起切吃火锅。",
+    "hyp": "你吃饭没有得没得的话我们一起去吃火锅",
+    "cer": 0.0556
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/02_0.wav",
+    "ref": "这个事情我晓得，你莫着急，慢慢来。",
+    "hyp": "这个事情我晓得你莫着急慢慢来",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/03_0.wav",
+    "ref": "老板儿，来二两小面，多放点海椒。",
+    "hyp": "老板儿来二两小面多放点海酒",
+    "cer": 0.0769
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/04_0.wav",
+    "ref": "你娃儿最近在忙啥子嘛？",
+    "hyp": "你娃儿最近在忙啥子嘛",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/05_0.wav",
+    "ref": "昨晚上那个雨下得才大哦，裤子都打湿完了。",
+    "hyp": "昨晚上那个雨下的才大哦裤子都打湿完了",
+    "cer": 0.0556
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/06_0.wav",
+    "ref": "这个菜巴适得板，再给我舀一碗饭。",
+    "hyp": "这个菜巴适的吧再给我养一碗鳝",
+    "cer": 0.2857
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/07_0.wav",
+    "ref": "莫慌，等我把这个事情搞归一了再说。",
+    "hyp": "莫慌等我把这个事情搞归逸了再说",
+    "cer": 0.0667
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/08_0.wav",
+    "ref": "他屋头那个猫儿又跑到房顶上去了。",
+    "hyp": "他屋头嘞个猫儿又爬到房顶上去了",
+    "cer": 0.1333
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_avg/09_0.wav",
+    "ref": "我们是四川人，说话就是这个味道。",
+    "hyp": "我们是四川人说话就是这个味道",
+    "cer": 0.0
+   }
+  ]
+ },
+ "sft_mandarin_regression": {
+  "mean_cer": 0.0,
+  "acoustic": {
+   "dur": 2.945,
+   "f0_med_semi": 15.918,
+   "f0_range": 9.322,
+   "f0_std": 3.45,
+   "fall_frac": 0.501,
+   "rate_syl_s": 4.845,
+   "n": 4
+  },
+  "rows": [
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_mandarin/00_0.wav",
+    "ref": "今天天气很好，我们出去走一走吧。",
+    "hyp": "今天天气很好我们出去走一走吧",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_mandarin/01_0.wav",
+    "ref": "你吃饭了吗？没有的话我们一起去吃火锅。",
+    "hyp": "你吃饭了吗没有的话我们一起去吃火锅",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_mandarin/02_0.wav",
+    "ref": "这件事情我知道，你不要着急，慢慢来。",
+    "hyp": "这件事情我知道你不要着急慢慢来",
+    "cer": 0.0
+   },
+   {
+    "wav": "/home/whu/chuan/eval/final/sft_mandarin/03_0.wav",
+    "ref": "老板，来二两小面，多放一点辣椒。",
+    "hyp": "老板来二两小面多放一点辣椒",
+    "cer": 0.0
+   }
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+{
+ "sft_female": {
+  "n": 10,
+  "mean_cos": 0.678,
+  "min_cos": 0.557
+ },
+ "sft_avg": {
+  "n": 10,
+  "mean_cos": 0.369,
+  "min_cos": 0.165
+ },
+ "prompt_self": {
+  "cos": 1.0
+ }
+}

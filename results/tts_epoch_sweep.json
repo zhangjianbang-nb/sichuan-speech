@@ -1,0 +1,62 @@
+{
+ "base": {
+  "cer_base": 0.0552,
+  "cer_ft": 0.031,
+  "rate": 5.29,
+  "dur": 3.36
+ },
+ "epoch_0": {
+  "cer_base": 0.0621,
+  "cer_ft": 0.0483,
+  "rate": 5.25,
+  "dur": 2.87
+ },
+ "epoch_1": {
+  "cer_base": 0.069,
+  "cer_ft": 0.0483,
+  "rate": 5.31,
+  "dur": 2.91
+ },
+ "epoch_2": {
+  "cer_base": 0.0379,
+  "cer_ft": 0.0276,
+  "rate": 5.21,
+  "dur": 2.88
+ },
+ "epoch_3": {
+  "cer_base": 0.0655,
+  "cer_ft": 0.0448,
+  "rate": 5.3,
+  "dur": 2.93
+ },
+ "epoch_4": {
+  "cer_base": 0.0483,
+  "cer_ft": 0.0345,
+  "rate": 5.4,
+  "dur": 2.82
+ },
+ "epoch_5": {
+  "cer_base": 0.0552,
+  "cer_ft": 0.0552,
+  "rate": 5.03,
+  "dur": 2.86
+ },
+ "epoch_6": {
+  "cer_base": 0.0621,
+  "cer_ft": 0.0448,
+  "rate": 5.2,
+  "dur": 2.74
+ },
+ "epoch_7": {
+  "cer_base": 0.0586,
+  "cer_ft": 0.0448,
+  "rate": 5.55,
+  "dur": 2.76
+ },
+ "epoch_8": {
+  "cer_base": 0.0655,
+  "cer_ft": 0.0517,
+  "rate": 5.25,
+  "dur": 2.75
+ }
+}
