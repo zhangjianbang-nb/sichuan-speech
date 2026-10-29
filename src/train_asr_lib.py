@@ -18,8 +18,9 @@ class FTAsr:
         self.model = am.model
         self.tok = am.kwargs["tokenizer"]
         self.fe = WavFrontend(**am.kwargs["frontend_conf"])
-        sd = torch.load(ckpt, map_location="cpu", weights_only=False)["model"]
-        self.model.load_state_dict(sd, strict=False)
+        if ckpt:
+            sd = torch.load(ckpt, map_location="cpu", weights_only=False)["model"]
+            self.model.load_state_dict(sd, strict=False)
         self.model.to(device).eval()
         self.device = device
 
@@ -77,3 +78,8 @@ def _cer(ref, hyp):
 
 def load_finetuned(ckpt, device="cpu"):
     return FTAsr(ckpt, device)
+
+
+def load_base(device="cpu"):
+    """Stock SenseVoiceSmall, no fine-tune applied. Used as the second opinion in cross-ASR."""
+    return FTAsr(None, device)

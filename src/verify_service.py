@@ -36,13 +36,15 @@ def post_form(path, fields, timeout=180):
         return r.read(), {k.lower(): v for k, v in r.headers.items()}
 
 
-def post_file(path, filename, data, timeout=120):
+def post_file(path, filename, data, timeout=120, model="ft"):
     boundary = uuid.uuid4().hex
     body = io.BytesIO()
     body.write(("--%s\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%s\"\r\n"
                 "Content-Type: audio/wav\r\n\r\n" % (boundary, filename)).encode())
     body.write(data)
-    body.write(("\r\n--%s--\r\n" % boundary).encode())
+    body.write(("--%s\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n%s\r\n"
+                % (boundary, model)).encode())
+    body.write(("--%s--\r\n" % boundary).encode())
     req = urllib.request.Request(BASE + path, data=body.getvalue(), method="POST",
                                  headers={"Content-Type": "multipart/form-data; boundary=" + boundary})
     with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -81,17 +83,22 @@ v = get("/voices")
 print("voices:", [x["id"] for x in v["voices"]])
 ok = ok and {x["id"] for x in v["voices"]} >= {"sichuan", "mandarin"}
 
-print("\n%-14s %-8s %-8s %-6s %s" % ("voice", "dur(s)", "rtf", "CER", "transcript"))
+print("\n%-14s %-8s %-8s %-6s %-7s %s" % ("voice", "dur(s)", "rtf", "CER", "best", "transcript"))
 for voice, text in CASES:
     try:
-        wav, hdr = post_form("/tts", {"text": text, "voice": voice})
+        wav, hdr = post_form("/tts", {"text": text, "voice": voice, "n_samples": "3"})
         assert wav[:4] == b"RIFF", "not a wav"
         asr = post_file("/asr", "t.wav", wav)
+        base = post_file("/asr", "t.wav", wav, model="base")
         c = cer(text, asr["text"])
-        print("%-14s %-8s %-8s %-6.3f %s" % (voice, hdr.get("x-duration", "?"),
-                                             hdr.get("x-rtf", "?"), c, asr["text"]))
+        print("%-14s %-8s %-8s %-6.3f %-7s %s" % (voice, hdr.get("x-duration", "?"),
+                                                  hdr.get("x-rtf", "?"), c,
+                                                  hdr.get("x-best-cer", "?"), asr["text"]))
         if voice in ("sichuan", "sichuan_avg") and c > 0.25:
             print("  ^ CER too high for the dialect voice")
+            ok = False
+        if cer(text, base["text"]) > 0.25:
+            print("  ^ stock Mandarin ASR cannot follow this clip either (synthesis may be broken)")
             ok = False
     except Exception as e:
         print("%-14s FAILED %r" % (voice, e))

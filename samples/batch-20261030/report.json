@@ -1,0 +1,151 @@
+{
+ "n_samples": 5,
+ "mean_cer_ft": 0.0289,
+ "mean_cer_base": 0.0289,
+ "rows": [
+  {
+   "file": "01_sichuan.wav",
+   "voice": "sichuan",
+   "text": "今天天气好安逸哦，我们出去耍一哈嘛。",
+   "asr_ft": "今天天气好安逸哦，我们出去耍一哈嘛。",
+   "asr_base": "今天天气好安逸哦，我们出去耍一哈嘛。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 4.24,
+   "rtf": 4.72,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "02_sichuan.wav",
+   "voice": "sichuan",
+   "text": "你吃饭没有得？没得的话我们一起切吃火锅。",
+   "asr_ft": "你吃饭没有得，没得的话，我们一起去吃火锅。",
+   "asr_base": "你吃饭没有得，没得的话，我们一起去吃火锅。",
+   "cer_ft": 0.0556,
+   "cer_base": 0.0556,
+   "dur": 3.96,
+   "rtf": 1.55,
+   "best_cer": "0.0556"
+  },
+  {
+   "file": "03_sichuan.wav",
+   "voice": "sichuan",
+   "text": "这个事情我晓得，你莫着急，慢慢来。",
+   "asr_ft": "这个事情我晓得，你莫着急，慢慢来。",
+   "asr_base": "这个事情我晓得，你莫着急，慢慢来。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 3.72,
+   "rtf": 0.28,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "04_sichuan.wav",
+   "voice": "sichuan",
+   "text": "老板儿，来二两小面，多放点海椒。",
+   "asr_ft": "老板儿来二两小面，多放点海椒。",
+   "asr_base": "老板儿来二两小面，多放点海椒。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 3.8,
+   "rtf": 0.84,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "05_sichuan.wav",
+   "voice": "sichuan",
+   "text": "来嘛，坐下喝口茶，慢慢摆龙门阵。",
+   "asr_ft": "来嘛，坐下喝口茶，慢慢摆龙门阵。",
+   "asr_base": "来嘛，坐下喝口茶，慢慢摆龙门阵。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 4.36,
+   "rtf": 0.53,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "06_sichuan.wav",
+   "voice": "sichuan",
+   "text": "他屋头那个猫儿又跑到房顶上去了。",
+   "asr_ft": "他屋头那个猫儿又跑到房顶上去了。",
+   "asr_base": "他屋头那个猫儿又跑到房顶上去了。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 3.28,
+   "rtf": 0.28,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "07_sichuan.wav",
+   "voice": "sichuan",
+   "text": "我跟你说哈，昨天我在春熙路碰到个老朋友，摆了半天龙门阵，巴适得很。",
+   "asr_ft": "我跟你说哈，昨天我在春熙路碰到个老朋友，摆了半天龙门阵，巴适得很。",
+   "asr_base": "我跟你说哈，昨天我在春熙路碰到个老朋友，摆了半天龙门阵，巴适得很。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 7.36,
+   "rtf": 0.24,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "08_sichuan.wav",
+   "voice": "sichuan",
+   "text": "这个娃儿成绩好得很，考起了川大，他爸妈高兴惨了。",
+   "asr_ft": "这个娃儿成绩好得很，考起了川大，他爸妈高兴惨了。",
+   "asr_base": "这个娃儿成绩好得很，考起了川大，他爸妈高兴惨了。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 5.4,
+   "rtf": 0.52,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "09_sichuan_avg.wav",
+   "voice": "sichuan_avg",
+   "text": "莫慌，等我把这个事情搞归一了再说。",
+   "asr_ft": "莫慌，等我把这个事情搞归一了再说。",
+   "asr_base": "莫慌，等我把这个事情搞归一了再说。",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 3.52,
+   "rtf": 0.54,
+   "best_cer": "0.0000"
+  },
+  {
+   "file": "10_sichuan_avg.wav",
+   "voice": "sichuan_avg",
+   "text": "天都快黑球了，你还不搞快点儿收摊摊？",
+   "asr_ft": "天都快黑球了，你还不搞快点收摊儿。",
+   "asr_base": "天都快黑球了，你还不搞快点收摊儿。",
+   "cer_ft": 0.125,
+   "cer_base": 0.125,
+   "dur": 4.68,
+   "rtf": 1.16,
+   "best_cer": "0.1250"
+  },
+  {
+   "file": "11_sichuan_zeroshot.wav",
+   "voice": "sichuan_zeroshot",
+   "text": "走嘛，周末我们切青城山耍，顺便吃碗担担面。",
+   "asr_ft": "周末周末我们去青城山耍，顺便吃碗担担面。",
+   "asr_base": "周末周末我们去青城山耍，顺便吃碗担担面。",
+   "cer_ft": 0.1667,
+   "cer_base": 0.1667,
+   "dur": 6.4,
+   "rtf": 3.26,
+   "best_cer": "0.1667"
+  },
+  {
+   "file": "12_mandarin.wav",
+   "voice": "mandarin",
+   "text": "今天天气很好，我们出去走一走吧。",
+   "asr_ft": "今天天气很好，我们出去走一走吧",
+   "asr_base": "今天天气很好，我们出去走一走吧",
+   "cer_ft": 0.0,
+   "cer_base": 0.0,
+   "dur": 3.52,
+   "rtf": 0.35,
+   "best_cer": "0.0000"
+  }
+ ]
+}

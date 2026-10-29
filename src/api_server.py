@@ -27,7 +27,7 @@ OFFICIAL_PROMPT = "/home/whu/CosyVoice/asset/zero_shot_prompt.wav"
 OFFICIAL_PROMPT_TEXT = "希望你以后能够做的比我还好呦。"
 
 app = FastAPI(title="Sichuan speech API", version="2.0")
-_state = {"base": None, "sft": None, "asr": None}
+_state = {"base": None, "sft": None, "asr": None, "asr_base": None}
 
 
 def get_sft():
@@ -52,6 +52,46 @@ def get_asr():
     return _state["asr"]
 
 
+def get_asr_base():
+    if _state["asr_base"] is None:
+        import train_asr_lib as tal
+        _state["asr_base"] = tal.load_base(
+            device="cuda" if torch.cuda.is_available() else "cpu")
+    return _state["asr_base"]
+
+
+def _norm(t):
+    import re
+    return re.sub(r"[\s，。、？！；：,.?!;:\"'“”‘’（）()《》<>·—\-]", "", t)
+
+
+def _cer(ref, hyp):
+    r, h = _norm(ref), _norm(hyp)
+    d = [[0] * (len(h) + 1) for _ in range(len(r) + 1)]
+    for i in range(len(r) + 1):
+        d[i][0] = i
+    for j in range(len(h) + 1):
+        d[0][j] = j
+    for i in range(1, len(r) + 1):
+        for j in range(1, len(h) + 1):
+            d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1,
+                          d[i - 1][j - 1] + (r[i - 1] != h[j - 1]))
+    return d[len(r)][len(h)] / max(1, len(r))
+
+
+def _self_cer(text, wav, sr):
+    """Round-trip CER of a candidate clip through our own dialect ASR."""
+    buf = io.BytesIO()
+    sf.write(buf, wav, sr, format="WAV")
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        f.write(buf.getvalue())
+        p = f.name
+    try:
+        return _cer(text, get_asr().transcribe(p))
+    finally:
+        os.unlink(p)
+
+
 @app.get("/health")
 def health():
     return {"ok": True, "gpu": os.environ["CUDA_VISIBLE_DEVICES"],
@@ -72,47 +112,66 @@ def voices():
 
 
 @app.post("/tts")
-def tts(text: str = Form(...), voice: str = Form("sichuan"), speed: float = Form(1.0)):
+def tts(text: str = Form(...), voice: str = Form("sichuan"), speed: float = Form(1.0),
+        n_samples: int = Form(5)):
+    """n_samples > 1 renders several candidates and keeps the one with the lowest
+    round-trip CER against the input text. Sampling is stochastic, so this removes most
+    of the intermittent misreads (e.g. 屋头 -> 屋脱) at the cost of N x latency."""
     text = text.strip()
     if not text:
         raise HTTPException(400, "empty text")
+    n_samples = max(1, min(5, n_samples))
     t0 = time.time()
-    if voice in ("sichuan", "sichuan_avg"):
-        m = get_sft()
-        spk = "sichuan_female" if voice == "sichuan" else "sichuan_avg"
-        if spk not in m.list_available_spks():
-            raise HTTPException(400, "speaker %s not in this model" % spk)
-        it = m.inference_sft(text, spk, stream=False, speed=speed)
-    elif voice == "sichuan_zeroshot":
-        m = get_base()
-        it = m.inference_zero_shot(text, SICHUAN_PROMPT_TEXT, SICHUAN_PROMPT, stream=False, speed=speed)
-    elif voice == "mandarin":
-        m = get_base()
-        it = m.inference_zero_shot(text, OFFICIAL_PROMPT_TEXT, OFFICIAL_PROMPT, stream=False, speed=speed)
-    else:
-        raise HTTPException(400, "unknown voice: %s" % voice)
-    chunks = [o["tts_speech"].squeeze().cpu().numpy() for o in it]
-    if not chunks:
-        raise HTTPException(500, "no audio generated")
-    wav = np.concatenate(chunks) if len(chunks) > 1 else chunks[0]
+    m = get_base() if voice in ("sichuan_zeroshot", "mandarin") else get_sft()
+    best = None
+    for _ in range(n_samples):
+        if voice in ("sichuan", "sichuan_avg"):
+            spk = "sichuan_female" if voice == "sichuan" else "sichuan_avg"
+            if spk not in m.list_available_spks():
+                raise HTTPException(400, "speaker %s not in this model" % spk)
+            it = m.inference_sft(text, spk, stream=False, speed=speed)
+        elif voice == "sichuan_zeroshot":
+            it = m.inference_zero_shot(text, SICHUAN_PROMPT_TEXT, SICHUAN_PROMPT,
+                                       stream=False, speed=speed)
+        elif voice == "mandarin":
+            it = m.inference_zero_shot(text, OFFICIAL_PROMPT_TEXT, OFFICIAL_PROMPT,
+                                       stream=False, speed=speed)
+        else:
+            raise HTTPException(400, "unknown voice: %s" % voice)
+        chunks = [o["tts_speech"].squeeze().cpu().numpy() for o in it]
+        if not chunks:
+            raise HTTPException(500, "no audio generated")
+        wav = np.concatenate(chunks) if len(chunks) > 1 else chunks[0]
+        if n_samples == 1:
+            best = (wav, None)
+            break
+        c = _self_cer(text, wav, m.sample_rate)
+        if best is None or c < best[1]:
+            best = (wav, c)
+        if c == 0.0:
+            break
+    wav, best_cer = best
     buf = io.BytesIO()
     sf.write(buf, wav, m.sample_rate, format="WAV")
     dur = len(wav) / m.sample_rate
-    return Response(buf.getvalue(), media_type="audio/wav",
-                    headers={"X-Duration": "%.2f" % dur,
-                             "X-RTF": "%.2f" % ((time.time() - t0) / max(1e-3, dur))})
+    hdr = {"X-Duration": "%.2f" % dur,
+           "X-RTF": "%.2f" % ((time.time() - t0) / max(1e-3, dur)),
+           "X-Samples": str(n_samples)}
+    if best_cer is not None:
+        hdr["X-Best-Cer"] = "%.4f" % best_cer
+    return Response(buf.getvalue(), media_type="audio/wav", headers=hdr)
 
 
 @app.post("/asr")
-def asr(file: UploadFile = File(...)):
+def asr(file: UploadFile = File(...), model: str = Form("ft")):
     suffix = os.path.splitext(file.filename or "a.wav")[1] or ".wav"
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
         f.write(file.file.read())
         p = f.name
     try:
         t0 = time.time()
-        txt = get_asr().transcribe(p)
-        return {"text": txt, "elapsed_s": round(time.time() - t0, 2)}
+        txt = (get_asr_base() if model == "base" else get_asr()).transcribe(p)
+        return {"text": txt, "model": model, "elapsed_s": round(time.time() - t0, 2)}
     finally:
         os.unlink(p)
 

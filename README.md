@@ -100,18 +100,26 @@ systemctl --user enable --now sichuan-audio.service   # 端口 8100，只绑 GPU
 
 ```bash
 curl -X POST localhost:8100/tts  -F "text=今天天气好安逸哦，我们出去耍一哈嘛。" -F "voice=sichuan" -o out.wav
-curl -X POST localhost:8100/asr  -F "file=@out.wav"
+curl -X POST localhost:8100/asr  -F "file=@out.wav"                   # 川话识别器
+curl -X POST localhost:8100/asr  -F "file=@out.wav" -F "model=base"   # 原版普通话识别器
 curl localhost:8100/voices
 ```
 
-一键验收（合成 → 回读 → 算 CER，三个音色都跑一遍）：
+**best-of-N**：TTS 采样是随机的，同一句话重采样会得到不同读音（实测「归一」首采正确率
+`sichuan` 2/8、`sichuan_avg` 3/8）。`/tts` 的 `n_samples` 参数（默认 5，可设 1–5）会合成
+多个候选，用川话 ASR 回读算 CER，返回最好的一个；命中 CER 0 就提前停。响应头里的
+`X-Best-Cer` 是选中候选的回读 CER，`X-Samples` 是实际用了几个候选。代价是延迟乘以
+候选数——4 秒音频 best-of-5 约 5–6 秒。
+
+一键验收（合成 → 双识别器回读 → 算 CER，三个音色都跑一遍）：
 
 ```bash
 python3 src/verify_service.py                 # 默认打 http://192.168.3.178:8100
 python3 src/verify_service.py http://localhost:8100
 ```
 
-通过时输出 `RESULT: PASS`，退出码 0。
+通过时输出 `RESULT: PASS`，退出码 0。批量生成 + 逐句回读报告用 `src/gen_demo_batch.py`
+（产物格式见 `samples/batch-20261030/`），采样方差探测用 `src/variance_probe.py`。
 
 四种声音：
 
@@ -158,7 +166,11 @@ GitHub 放不下 2 GB 的 `llm.pt`。权重在训练机的这两个路径：
    `results/` 与 `docs/evaluation.md`。
 2. **TTS 只微调了 LLM**，flow 与声码器保持原样。口音由 LLM 的 text→speech-token 映射决定，
    音色由说话人向量控制（CosyVoice2 的 LLM 不使用说话人向量）。
-3. **词级读音错误仍存在**：如「归一」读成「搞鬼一楼」（见 `samples/README.md`）。
-   语料里这类词只出现几十次，属于长尾。
+3. **词级读音错误仍存在，且分两类**：
+   - 随机型（「归一」读成「鬼一/诡一/归你」，首采正确率 25%–37%）——`n_samples` 的
+     best-of-N 能把成功率抬到 76%–90%，但不能根治。
+   - 系统型（「收摊摊」读成「说摊塌/海滩儿」、「切」按普通话读成 qù）——叠词名词和
+     方言词读音是训练语料的长尾，best-of-N 也救不了，只能靠加数据。
+   逐句证据见 `samples/batch-20261030/README.md`。
 4. 语料以成都/重庆片为主，川南、川东口音覆盖不足。
 5. 9.12 小时属于小样本领域迁移，继续加数据仍有提升空间。
