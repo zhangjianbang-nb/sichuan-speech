@@ -102,6 +102,15 @@ curl -X POST localhost:8100/asr  -F "file=@out.wav"
 curl localhost:8100/voices
 ```
 
+一键验收（合成 → 回读 → 算 CER，三个音色都跑一遍）：
+
+```bash
+python3 src/verify_service.py                 # 默认打 http://192.168.3.178:8100
+python3 src/verify_service.py http://localhost:8100
+```
+
+通过时输出 `RESULT: PASS`，退出码 0。
+
 四种声音：
 
 | voice | 引擎 | 说明 |
