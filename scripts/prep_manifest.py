@@ -8,7 +8,6 @@ only), which is kept so the round-1 numbers stay reproducible.
 
 from __future__ import annotations
 
-import argparse
 
 from _common import build_parser, settings_from_args
 

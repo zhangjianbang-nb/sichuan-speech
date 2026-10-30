@@ -8,7 +8,6 @@ reproduces the failed recipe (8 epochs, lr 2e-5, blank emotion token) for the re
 
 from __future__ import annotations
 
-import argparse
 
 from _common import build_parser, settings_from_args
 

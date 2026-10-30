@@ -7,7 +7,6 @@ rate (3e-6; 1e-5 overfits after one epoch) and denser logging.
 
 from __future__ import annotations
 
-import argparse
 
 from _common import build_parser, settings_from_args
 

@@ -7,7 +7,6 @@ the GPU box). Every call raises :class:`SpeechApiError` on non-2xx responses.
 
 from __future__ import annotations
 
-import io
 import json
 import time
 import urllib.error
@@ -47,7 +46,7 @@ def encode_multipart(
             ).encode("utf-8")
         )
     for name, (filename, content, content_type) in files.items():
-        safe_name = filename.replace('"', "_").replace("\r", "").replace("\n", "")
+        safe_name = filename.replace('"', "_").replace("\r", "_").replace("\n", "_")
         chunks.append(
             (
                 f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"; '

@@ -29,7 +29,7 @@ from typing import Any, Sequence
 
 import numpy as np
 
-from ..asr import SPECIAL_NOITN, SPECIAL_SPEECH, SPECIAL_ZH, VOCAB_SPECIAL_START, label_prefix
+from ..asr import VOCAB_SPECIAL_START, label_prefix
 from ..config import Settings
 
 logger = logging.getLogger(__name__)

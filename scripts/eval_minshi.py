@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import argparse
 
 from _common import build_parser, settings_from_args
 

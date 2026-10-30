@@ -55,7 +55,8 @@ def test_verify_records_request_failures():
     report = verify(FakeClient(fail_voice="sichuan"), [("sichuan", "你好")], n_samples=1)
     assert report.ok is False
     assert report.checks[0].note.startswith("request failed")
-    assert report.fatal is True
+    # fatal is reserved for an unhealthy service, not a single bad request
+    assert report.fatal is False
 
 
 def test_verify_warns_on_gpu_and_missing_voices():
@@ -98,4 +99,4 @@ def test_table_helpers_align_cjk():
     assert _display_width("中文") == 4
     assert _pad("中文", 6) == "中文  "
     assert _fmt(None) == "-"
-    assert _fmt(0.12345) == "0.1235"
+    assert _fmt(0.12345) == "0.12"

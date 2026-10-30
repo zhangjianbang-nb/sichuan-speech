@@ -7,7 +7,6 @@ Both sides of the comparison go through the same CTC decode path and the same
 
 from __future__ import annotations
 
-import argparse
 
 from _common import build_parser, settings_from_args
 

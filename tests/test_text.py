@@ -24,7 +24,8 @@ def test_normalize_text_drops_punctuation_whitespace_and_zero_width():
     assert normalize_text("今天天气好，我们出去耍一哈嘛。") == "今天天气好我们出去耍一哈嘛"
     assert normalize_text(" a b\tc\n") == "abc"
     assert normalize_text("a\u200bb\ufeffc") == "abc"
-    assert normalize_text("（四）和（十）") == "四十"
+    assert normalize_text("（四）和（十）") == "四和十"
+    assert normalize_text("（四）十") == "四十"
 
 
 def test_cer_identical_is_zero():
