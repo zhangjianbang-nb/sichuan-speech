@@ -86,6 +86,10 @@ jobs:
           if shown == 0:
               raw = " | ".join(lines[-30:])[:3000]
               print(f"::error file=.github/workflows/ci.yml,line=1::pytest exit {status}: {raw}")
+          text = "\n".join(lines)
+          start = text.find("ERRORS")
+          excerpt = text[start:] if start >= 0 else text[-2500:]
+          print("::error file=.github/workflows/ci.yml,line=1::" + " | ".join(excerpt.splitlines())[:3000])
           PY
             exit 1
           fi
