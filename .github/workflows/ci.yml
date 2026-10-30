@@ -49,19 +49,19 @@ jobs:
           cat mypy.txt
           if [ "$status" -ne 0 ]; then
             python - <<'PY'
-            import re
+          import re
 
-            shown = 0
-            with open("mypy.txt", encoding="utf-8") as handle:
-                for line in handle:
-                    match = re.match(r"^(.+?):(\d+): error: (.+)$", line.rstrip())
-                    if match and shown < 50:
-                        print(
-                            f"::error file={match.group(1)},line={match.group(2)}"
-                            f"::{match.group(3)}"
-                        )
-                        shown += 1
-            PY
+          lines = [line.rstrip() for line in open("mypy.txt", encoding="utf-8")]
+          shown = 0
+          for line in lines:
+              match = re.match(r"^(.+?):(\d+): error: (.+)$", line)
+              if match and shown < 50:
+                  print(f"::error file={match.group(1)},line={match.group(2)}::{match.group(3)}")
+                  shown += 1
+          if shown == 0:
+              raw = " | ".join(lines[:20])[:3000]
+              print(f"::error file=.github/workflows/ci.yml,line=1::mypy exit {status}: {raw}")
+          PY
             exit 1
           fi
 
