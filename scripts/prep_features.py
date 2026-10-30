@@ -8,13 +8,14 @@ root and ``third_party/Matcha-TTS`` on ``PYTHONPATH``.
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
 def main() -> int:
     parser = build_parser(__doc__ or "")
-    parser.add_argument("--python", default=None, help="interpreter used for the tools (default: current)")
+    parser.add_argument(
+        "--python", default=None, help="interpreter used for the tools (default: current)"
+    )
     parser.add_argument("--splits", nargs="+", default=["train", "dev"])
     parser.add_argument("--num-processes", type=int, default=10)
     parser.add_argument("--utts-per-parquet", type=int, default=1000)

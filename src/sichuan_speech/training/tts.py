@@ -18,8 +18,8 @@ import os
 import shutil
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from ..config import Settings
 
@@ -40,7 +40,9 @@ def derive_sft_config(
     learning rate and denser logging. At lr 1e-5 the model overfits after one
     epoch on 6 hours of data; 3e-6 is what produced the usable 9-epoch curve.
     """
-    source = Path(cosyvoice_home) / "examples" / "libritts" / "cosyvoice2" / "conf" / "cosyvoice2.yaml"
+    source = (
+        Path(cosyvoice_home) / "examples" / "libritts" / "cosyvoice2" / "conf" / "cosyvoice2.yaml"
+    )
     if not source.exists():
         raise FileNotFoundError(f"CosyVoice config template not found: {source}")
     text = source.read_text(encoding="utf-8")
@@ -50,7 +52,9 @@ def derive_sft_config(
     text = text.replace("max_epoch: 200", f"max_epoch: {max_epoch}")
     text = text.replace("log_interval: 100", f"log_interval: {log_interval}")
     text = text.replace("lr: 1e-5 # change to 1e-5 during sft", f"lr: {lr} # Sichuan SFT")
-    text = text.replace("scheduler: constantlr # change to constantlr during sft", "scheduler: constantlr")
+    text = text.replace(
+        "scheduler: constantlr # change to constantlr during sft", "scheduler: constantlr"
+    )
 
     target = Path(destination)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -84,8 +88,11 @@ def prepare_features(
     onnx_dir = settings.base_model_dir
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(
-        [str(cosyvoice_home), str(cosyvoice_home / "third_party" / "Matcha-TTS"),
-         env.get("PYTHONPATH", "")]
+        [
+            str(cosyvoice_home),
+            str(cosyvoice_home / "third_party" / "Matcha-TTS"),
+            env.get("PYTHONPATH", ""),
+        ]
     )
 
     summary = {}
@@ -95,15 +102,27 @@ def prepare_features(
             raise FileNotFoundError(f"{directory}/wav.scp missing; build the manifest first")
         logger.info("== %s embedding", split)
         _run(
-            [interpreter, str(tools / "extract_embedding.py"), "--dir", str(directory),
-             "--onnx_path", str(onnx_dir / "campplus.onnx")],
+            [
+                interpreter,
+                str(tools / "extract_embedding.py"),
+                "--dir",
+                str(directory),
+                "--onnx_path",
+                str(onnx_dir / "campplus.onnx"),
+            ],
             cwd=cosyvoice_home,
             env=env,
         )
         logger.info("== %s speech tokens", split)
         _run(
-            [interpreter, str(tools / "extract_speech_token.py"), "--dir", str(directory),
-             "--onnx_path", str(onnx_dir / "speech_tokenizer_v2.onnx")],
+            [
+                interpreter,
+                str(tools / "extract_speech_token.py"),
+                "--dir",
+                str(directory),
+                "--onnx_path",
+                str(onnx_dir / "speech_tokenizer_v2.onnx"),
+            ],
             cwd=cosyvoice_home,
             env=env,
         )
@@ -112,10 +131,18 @@ def prepare_features(
         parquet_dir.mkdir(parents=True, exist_ok=True)
         logger.info("== %s parquet", split)
         _run(
-            [interpreter, str(tools / "make_parquet_list.py"),
-             "--num_utts_per_parquet", str(utts_per_parquet),
-             "--num_processes", str(num_processes),
-             "--src_dir", str(directory), "--des_dir", str(parquet_dir)],
+            [
+                interpreter,
+                str(tools / "make_parquet_list.py"),
+                "--num_utts_per_parquet",
+                str(utts_per_parquet),
+                "--num_processes",
+                str(num_processes),
+                "--src_dir",
+                str(directory),
+                "--des_dir",
+                str(parquet_dir),
+            ],
             cwd=cosyvoice_home,
             env=env,
         )

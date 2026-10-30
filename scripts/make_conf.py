@@ -7,13 +7,14 @@ rate (3e-6; 1e-5 overfits after one epoch) and denser logging.
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
 def main() -> int:
     parser = build_parser(__doc__ or "")
-    parser.add_argument("--out", default=None, help="destination yaml (default: <work_root>/conf/sft.yaml)")
+    parser.add_argument(
+        "--out", default=None, help="destination yaml (default: <work_root>/conf/sft.yaml)"
+    )
     parser.add_argument("--lr", type=float, default=3e-6)
     parser.add_argument("--max-epoch", type=int, default=20)
     parser.add_argument("--log-interval", type=int, default=20)

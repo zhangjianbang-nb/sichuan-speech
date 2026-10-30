@@ -82,12 +82,22 @@ def evaluate_accent(
     mandarin_prompt = (settings.official_prompt_text, str(settings.official_prompt_wav))
     sichuan_prompt = (settings.prompt_text, str(settings.prompt_wav))
 
-    base_engine = CosyVoiceEngine(settings.base_model_dir, fp16=settings.tts_fp16, settings=settings)
+    base_engine = CosyVoiceEngine(
+        settings.base_model_dir, fp16=settings.tts_fp16, settings=settings
+    )
     base_mandarin = generate(
-        base_engine.model, sentences, output / "base_mandarin_prompt", mode="zero_shot", prompt=mandarin_prompt
+        base_engine.model,
+        sentences,
+        output / "base_mandarin_prompt",
+        mode="zero_shot",
+        prompt=mandarin_prompt,
     )
     base_sichuan = generate(
-        base_engine.model, sentences, output / "base_sichuan_prompt", mode="zero_shot", prompt=sichuan_prompt
+        base_engine.model,
+        sentences,
+        output / "base_sichuan_prompt",
+        mode="zero_shot",
+        prompt=sichuan_prompt,
     )
     del base_engine
     torch.cuda.empty_cache()
@@ -106,8 +116,8 @@ def evaluate_accent(
         report[name]["p_sw"] = _score_classifier(paths, classifier)
 
     save_json(output / "accent_report.json", report)
-    header = "%-24s %s" % ("set", "  ".join("%10s" % key for key in KEYS))
+    header = f"{'set':<24} " + "  ".join(f"{key:>10}" for key in KEYS)
     logger.info(header)
     for name, values in report.items():
-        logger.info("%-24s %s", name, "  ".join("%10s" % values.get(key) for key in KEYS))
+        logger.info("%-24s %s", name, "  ".join(f"{values.get(key)!s:>10}" for key in KEYS))
     return report

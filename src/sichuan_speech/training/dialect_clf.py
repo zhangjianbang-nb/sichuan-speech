@@ -21,9 +21,9 @@ import glob
 import json
 import logging
 import random
+from collections.abc import Sequence
 from functools import lru_cache
 from pathlib import Path
-from typing import Sequence
 
 import numpy as np
 
@@ -44,14 +44,22 @@ def _net_class():
         def __init__(self) -> None:
             super().__init__()
             self.c = nn.Sequential(
-                nn.Conv2d(1, 16, 3, padding=1), nn.BatchNorm2d(16), nn.ReLU(), nn.MaxPool2d(2),
-                nn.Conv2d(16, 32, 3, padding=1), nn.BatchNorm2d(32), nn.ReLU(), nn.MaxPool2d(2),
-                nn.Conv2d(32, 64, 3, padding=1), nn.BatchNorm2d(64), nn.ReLU(),
+                nn.Conv2d(1, 16, 3, padding=1),
+                nn.BatchNorm2d(16),
+                nn.ReLU(),
+                nn.MaxPool2d(2),
+                nn.Conv2d(16, 32, 3, padding=1),
+                nn.BatchNorm2d(32),
+                nn.ReLU(),
+                nn.MaxPool2d(2),
+                nn.Conv2d(32, 64, 3, padding=1),
+                nn.BatchNorm2d(64),
+                nn.ReLU(),
                 nn.AdaptiveAvgPool2d((4, 8)),
             )
             self.f = nn.Linear(64 * 4 * 8, 2)
 
-        def forward(self, x):  # noqa: ANN001, ANN201 - torch module signature
+        def forward(self, x):
             return self.f(self.c(x).flatten(1))
 
     return Net
@@ -61,9 +69,7 @@ def _librosa_mel(path: str | Path, *, max_frames: int = MAX_FRAMES) -> np.ndarra
     import librosa
 
     wav, _ = librosa.load(str(path), sr=SR)
-    mel = librosa.feature.melspectrogram(
-        y=wav, sr=SR, n_fft=1024, hop_length=160, n_mels=N_MELS
-    )
+    mel = librosa.feature.melspectrogram(y=wav, sr=SR, n_fft=1024, hop_length=160, n_mels=N_MELS)
     mel = librosa.power_to_db(mel, ref=np.max)
     mel = (mel + 40.0) / 40.0
     if mel.shape[1] > max_frames:
@@ -90,7 +96,8 @@ def train_kespeech_classifier(
     torch.manual_seed(seed)
     eval_root = settings.data_root / "eval"
     rows: list[tuple[str, int]] = [
-        (row["wav"], 1) for row in json.loads((eval_root / "kespeech_sw.json").read_text(encoding="utf-8"))
+        (row["wav"], 1)
+        for row in json.loads((eval_root / "kespeech_sw.json").read_text(encoding="utf-8"))
     ] + [
         (row["wav"], 0)
         for row in json.loads((eval_root / "kespeech_mandarin.json").read_text(encoding="utf-8"))
@@ -102,7 +109,7 @@ def train_kespeech_classifier(
         "samples %d, speakers %d, southwestern speakers %d",
         len(labels),
         len(set(groups)),
-        len({s for s, label in zip(groups, labels) if label == 1}),
+        len({s for s, label in zip(groups, labels, strict=True) if label == 1}),
     )
 
     Net = _net_class()
@@ -169,7 +176,9 @@ def _torch_mel(wav: np.ndarray):
     return torch.log(transform(tensor).clamp(min=1e-6))
 
 
-def _load_segment(path: str | Path, seconds: float = 3.0, *, random_start: bool = False) -> np.ndarray:
+def _load_segment(
+    path: str | Path, seconds: float = 3.0, *, random_start: bool = False
+) -> np.ndarray:
     import soundfile as sf
     import torch
     import torchaudio
@@ -198,7 +207,8 @@ def _collect_items(settings: Settings) -> list[tuple[str, int]]:
         for basename in json.loads(labels_file.read_text(encoding="utf-8")):
             sichuan.append((str(settings.data_root / "raw" / "sichuanhua" / basename), 1))
     mandarin = [
-        (path, 0) for path in glob.glob(str(settings.data_root / "raw" / "mandarin" / "wav" / "*.wav"))
+        (path, 0)
+        for path in glob.glob(str(settings.data_root / "raw" / "mandarin" / "wav" / "*.wav"))
     ]
     random.shuffle(sichuan)
     random.shuffle(mandarin)
@@ -218,10 +228,10 @@ def train_dialect_classifier(
     batch_size: int = 16,
 ) -> dict:
     """Train the log-mel CNN used by the accent evaluation."""
+    import os
+
     import torch
     import torch.nn as nn
-
-    import os
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu or settings.gpu)
     torch.manual_seed(seed)
@@ -311,7 +321,9 @@ def evaluate_dialect_classifier(
 
     results = {}
     for name in sets:
-        rows = json.loads((settings.data_root / "eval" / f"{name}.json").read_text(encoding="utf-8"))
+        rows = json.loads(
+            (settings.data_root / "eval" / f"{name}.json").read_text(encoding="utf-8")
+        )
         probabilities = []
         with torch.no_grad():
             for row in rows:
@@ -324,6 +336,11 @@ def evaluate_dialect_classifier(
             "mean_p_sichuan": round(mean, 3),
             "frac_gt_0.5": round(float(np.mean([p > 0.5 for p in probabilities])), 3),
         }
-        logger.info("%s n=%d mean_p=%.3f frac>0.5=%.3f", name, len(probabilities), mean,
-                    results[name]["frac_gt_0.5"])
+        logger.info(
+            "%s n=%d mean_p=%.3f frac>0.5=%.3f",
+            name,
+            len(probabilities),
+            mean,
+            results[name]["frac_gt_0.5"],
+        )
     return results

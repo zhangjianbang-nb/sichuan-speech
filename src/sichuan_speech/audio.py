@@ -68,7 +68,7 @@ def load_audio(
         try:
             sf = _soundfile()
             wav, sr = sf.read(str(path), dtype="float32", always_2d=False)
-        except Exception as exc:  # noqa: BLE001 - libsndfile raises many types
+        except Exception as exc:
             logger.debug("soundfile failed on %s (%s), trying ffmpeg", path, exc)
             wav, sr = _decode_with_ffmpeg(bytes(path.read_bytes()))
     wav = to_mono(wav)
@@ -83,7 +83,7 @@ def _decode_bytes(data: bytes) -> tuple[np.ndarray, int]:
         sf = _soundfile()
         wav, sr = sf.read(io.BytesIO(data), dtype="float32", always_2d=False)
         return wav, sr
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.debug("soundfile failed on %d bytes (%s), trying ffmpeg", len(data), exc)
         return _decode_with_ffmpeg(data)
 
@@ -98,8 +98,22 @@ def _decode_with_ffmpeg(data: bytes) -> tuple[np.ndarray, int]:
         dst = os.path.join(tmp, "output.wav")
         Path(src).write_bytes(data)
         proc = subprocess.run(
-            ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", src,
-             "-ac", "1", "-ar", str(TARGET_SR), "-f", "wav", dst],
+            [
+                "ffmpeg",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-y",
+                "-i",
+                src,
+                "-ac",
+                "1",
+                "-ar",
+                str(TARGET_SR),
+                "-f",
+                "wav",
+                dst,
+            ],
             capture_output=True,
             check=False,
         )
@@ -122,7 +136,7 @@ def resample(wav: np.ndarray, sr_in: int, sr_out: int) -> np.ndarray:
         divisor = gcd(int(sr_in), int(sr_out))
         out = resample_poly(array, int(sr_out) // divisor, int(sr_in) // divisor)
         return np.asarray(out, dtype=np.float32)
-    except Exception:  # noqa: BLE001 - scipy absent or failed
+    except Exception:
         logger.debug("scipy unavailable, using windowed-sinc resampler")
         return _sinc_resample(array, sr_in, sr_out)
 
@@ -133,7 +147,7 @@ def _sinc_resample(wav: np.ndarray, sr_in: int, sr_out: int, half_taps: int = 16
     Good enough for 16 kHz ASR input; not intended for music production.
     """
     ratio = float(sr_out) / float(sr_in)
-    n_out = int(round(len(wav) * ratio))
+    n_out = round(len(wav) * ratio)
     if n_out <= 0:
         return np.zeros(0, dtype=np.float32)
     cutoff = min(1.0, ratio)
@@ -171,7 +185,9 @@ def wav_bytes(wav: np.ndarray, sr: int, *, subtype: str = DEFAULT_SUBTYPE) -> by
     return buffer.getvalue()
 
 
-def write_wav(path: str | Path, wav: np.ndarray, sr: int, *, subtype: str = DEFAULT_SUBTYPE) -> Path:
+def write_wav(
+    path: str | Path, wav: np.ndarray, sr: int, *, subtype: str = DEFAULT_SUBTYPE
+) -> Path:
     """Write a WAV file, creating parent directories as needed."""
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)

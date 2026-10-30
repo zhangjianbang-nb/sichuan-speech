@@ -41,7 +41,10 @@ def check_speaker_similarity(
     out: str | Path | None = None,
     eval_dir: str | Path | None = None,
     sft_dir: str | Path | None = None,
-    subsets: tuple[tuple[str, str], ...] = (("sft_female", "sichuan_female"), ("sft_avg", "sichuan_avg")),
+    subsets: tuple[tuple[str, str], ...] = (
+        ("sft_female", "sichuan_female"),
+        ("sft_avg", "sichuan_avg"),
+    ),
 ) -> dict:
     """Write ``speaker_sim.json`` with mean and minimum cosine per synthesised subset."""
     import onnxruntime
@@ -57,7 +60,9 @@ def check_speaker_similarity(
         sess_options=options,
         providers=["CPUExecutionProvider"],
     )
-    spk2info = torch.load(str(sft_model_dir / "spk2info.pt"), map_location="cpu", weights_only=False)
+    spk2info = torch.load(
+        str(sft_model_dir / "spk2info.pt"), map_location="cpu", weights_only=False
+    )
 
     report: dict[str, dict] = {}
     for subset, speaker in subsets:
@@ -71,7 +76,7 @@ def check_speaker_similarity(
         for path in paths:
             try:
                 similarities.append(float((_embedding(session, path) * target).sum()))
-            except Exception as error:  # noqa: BLE001 - one bad file must not abort the report
+            except Exception as error:
                 logger.warning("skipped %s: %s", path, error)
         if not similarities:
             continue
@@ -87,7 +92,9 @@ def check_speaker_similarity(
         target = torch.nn.functional.normalize(
             spk2info["sichuan_female"]["embedding"].reshape(1, -1), dim=1
         ).numpy()
-        report["prompt_self"] = {"cos": round(float((_embedding(session, prompt_wav) * target).sum()), 3)}
+        report["prompt_self"] = {
+            "cos": round(float((_embedding(session, prompt_wav) * target).sum()), 3)
+        }
         logger.info("prompt_self %s", report["prompt_self"])
 
     save_json(output / "speaker_sim.json", report)

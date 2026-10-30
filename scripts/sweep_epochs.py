@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
@@ -28,7 +27,9 @@ def main() -> int:
         n_sent=args.n_sent,
     )
     for tag, values in report.items():
-        print(f"{tag:<10} cer_base {values['cer_base']:.4f}  cer_ft {values['cer_ft']:.4f}  rate {values['rate']}")
+        print(
+            f"{tag:<10} cer_base {values['cer_base']:.4f}  cer_ft {values['cer_ft']:.4f}  rate {values['rate']}"
+        )
     return 0
 
 

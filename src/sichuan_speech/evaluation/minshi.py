@@ -68,7 +68,7 @@ def _analyse(recognizer: SenseVoiceRecognizer, path: str, text: str) -> dict | N
         alignment, _ = F.forced_align(
             log_probs, targets, torch.tensor([frames]), torch.tensor([len(ids)]), blank=0
         )
-    except Exception as error:  # noqa: BLE001 - old torchaudio lacks forced_align
+    except Exception as error:
         logger.warning("forced_align unavailable for %s: %s", path, error)
         return None
 
@@ -103,7 +103,11 @@ def _analyse(recognizer: SenseVoiceRecognizer, path: str, text: str) -> dict | N
         window = min(0.085, max(1, end - start + 1) * hop * 0.45)
         begin_sample = int(start * TARGET_SR * hop)
         finish_sample = begin_sample + int(window * TARGET_SR)
-        if finish_sample > len(wav) or begin_sample >= len(wav) or finish_sample - begin_sample < 160:
+        if (
+            finish_sample > len(wav)
+            or begin_sample >= len(wav)
+            or finish_sample - begin_sample < 160
+        ):
             continue
         value = _centroid(wav[begin_sample:finish_sample])
         if np.isnan(value):
@@ -115,7 +119,9 @@ def _analyse(recognizer: SenseVoiceRecognizer, path: str, text: str) -> dict | N
     return {"s": s_values, "sh": sh_values, "frames": frames, "hop_ms": round(hop * 1000, 1)}
 
 
-def _collect(recognizer: SenseVoiceRecognizer, items: list[tuple[str, str]], name: str) -> dict | None:
+def _collect(
+    recognizer: SenseVoiceRecognizer, items: list[tuple[str, str]], name: str
+) -> dict | None:
     s_all: list[float] = []
     sh_all: list[float] = []
     used = 0
@@ -132,7 +138,13 @@ def _collect(recognizer: SenseVoiceRecognizer, items: list[tuple[str, str]], nam
     mean_s, mean_sh = float(np.mean(s_all)), float(np.mean(sh_all))
     logger.info(
         "%-18s utts %2d  n_s %3d n_sh %3d  centroid_s %.0f  centroid_sh %.0f  gap %+.0f Hz",
-        name, used, len(s_all), len(sh_all), mean_s, mean_sh, mean_s - mean_sh,
+        name,
+        used,
+        len(s_all),
+        len(sh_all),
+        mean_s,
+        mean_sh,
+        mean_s - mean_sh,
     )
     return {
         "utts": used,
@@ -148,7 +160,11 @@ def _pick(rows: list[dict], per_set: int) -> list[tuple[str, str]]:
     picked = []
     for row in rows:
         text = row["text"]
-        if any(char in S_CHARS for char in text) and any(char in SH_CHARS for char in text) and 1.0 < len(text) < 30:
+        if (
+            any(char in S_CHARS for char in text)
+            and any(char in SH_CHARS for char in text)
+            and 1.0 < len(text) < 30
+        ):
             picked.append((row["wav"], text))
         if len(picked) >= per_set:
             break
@@ -202,7 +218,9 @@ def evaluate_minshi(
             stream = (
                 engine.model.inference_sft(TONGUE_TWISTER, spk, stream=False)
                 if spk
-                else engine.model.inference_zero_shot(TONGUE_TWISTER, prompt[0], prompt[1], stream=False)
+                else engine.model.inference_zero_shot(
+                    TONGUE_TWISTER, prompt[0], prompt[1], stream=False
+                )
             )
             wav = np.concatenate([chunk["tts_speech"].squeeze().cpu().numpy() for chunk in stream])
             path = tongue_dir / f"{tag}_{take}.wav"

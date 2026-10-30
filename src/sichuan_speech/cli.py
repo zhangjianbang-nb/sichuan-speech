@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from typing import Sequence
+from collections.abc import Sequence
 
 from . import __version__
 from .config import Settings
@@ -146,8 +146,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         from .service import SpeechService
 
         service = SpeechService(settings)
-        print(json.dumps({"default": "sichuan", "voices": service.voice_status()},
-                         ensure_ascii=False, indent=2))
+        print(
+            json.dumps(
+                {"default": "sichuan", "voices": service.voice_status()},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
         return 0
     return 2
 

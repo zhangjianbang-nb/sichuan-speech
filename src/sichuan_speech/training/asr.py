@@ -24,8 +24,9 @@ import math
 import os
 import random
 import time
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -70,7 +71,9 @@ def _load_wav(path: str) -> np.ndarray:
     return wav
 
 
-def _make_batch(chunk: Sequence[Sequence], frontend: Any, tokenizer: Any, device: str, neutral: bool):
+def _make_batch(
+    chunk: Sequence[Sequence], frontend: Any, tokenizer: Any, device: str, neutral: bool
+):
     import torch
 
     feats, feat_lens, token_ids, token_lens = [], [], [], []
@@ -150,11 +153,13 @@ def train_asr(
     batch = int(batch if batch is not None else config["batch"])
     max_sec = float(max_sec if max_sec is not None else config["max_sec"])
     neutral = bool(config["neutral"])
-    out_dir = Path(out) if out else settings.work_root / ("exp/asr2" if profile == "round2" else "exp/asr")
+    out_dir = (
+        Path(out)
+        if out
+        else settings.work_root / ("exp/asr2" if profile == "round2" else "exp/asr")
+    )
     manifest_path = (
-        Path(manifest)
-        if manifest
-        else settings.data_root / "sft" / str(config["manifest"])
+        Path(manifest) if manifest else settings.data_root / "sft" / str(config["manifest"])
     )
 
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu or settings.gpu)

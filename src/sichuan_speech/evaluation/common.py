@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -82,12 +83,14 @@ def acoustic_features(path: str | Path) -> dict[str, float] | None:
         return {
             "dur": round(float(len(wav) / sr), 2),
             "f0_med_semi": round(float(np.median(semitones)), 2),
-            "f0_range": round(float(np.percentile(semitones, 90) - np.percentile(semitones, 10)), 2),
+            "f0_range": round(
+                float(np.percentile(semitones, 90) - np.percentile(semitones, 10)), 2
+            ),
             "f0_std": round(float(np.std(semitones)), 2),
             "fall_frac": round(float((deltas < 0).mean()), 3),
             "rate_syl_s": round(float(len(onsets) / max(1e-3, len(wav) / sr)), 2),
         }
-    except Exception as exc:  # noqa: BLE001 - librosa fails on odd files
+    except Exception as exc:
         logger.debug("acoustic features failed for %s: %s", path, exc)
         return None
 

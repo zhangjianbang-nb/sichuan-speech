@@ -48,7 +48,10 @@ def _label_of(filename: str) -> str:
 
 
 def _render(rows: list[dict]) -> str:
-    lines = ["# 试听样本\n", "全部由 `sichuan-speech serve` 的 `/tts` 现场合成。每段音频用两个识别器回读："]
+    lines = [
+        "# 试听样本\n",
+        "全部由 `sichuan-speech serve` 的 `/tts` 现场合成。每段音频用两个识别器回读：",
+    ]
     lines.append("`base` = 原版 SenseVoiceSmall（普通话），`ft` = 川话微调版。\n")
     lines.append("回读 CER 的读法很关键：**CER 低 ≠ 口音好**。川话口音会让普通话识别器写出别的字，")
     lines.append("CER 反而升高；但如果是合成崩了，川话识别器也救不回来，两个 CER 会一起升高。")
@@ -63,8 +66,8 @@ def _render(rows: list[dict]) -> str:
         if row["ref"] != anchor:
             continue
         lines.append(
-            "| `%s`（%s） | %s | %s | %.3f | %.3f |"
-            % (row["file"], _label_of(row["file"]), row["base"], row["ft"], row["cer_base"], row["cer_ft"])
+            f"| `{row['file']}`（{_label_of(row['file'])}） | {row['base']} | {row['ft']} | "
+            f"{row['cer_base']:.3f} | {row['cer_ft']:.3f} |"
         )
     lines.append("")
     lines.append("微调模型把「安逸」「一哈」读对了（两个识别器都 0 错），原版模型两种提示音都读成")
@@ -76,11 +79,8 @@ def _render(rows: list[dict]) -> str:
     lines.append("|---|---|---|---|---|---|---|")
     for row in rows:
         lines.append(
-            "| `%s` | %s | %s | %s | %s | %.3f | %.3f |"
-            % (
-                row["file"], _label_of(row["file"]), row["ref"],
-                row["base"], row["ft"], row["cer_base"], row["cer_ft"],
-            )
+            f"| `{row['file']}` | {_label_of(row['file'])} | {row['ref']} | {row['base']} | "
+            f"{row['ft']} | {row['cer_base']:.3f} | {row['cer_ft']:.3f} |"
         )
     lines.append("")
     lines.append("## 怎么听\n")
@@ -92,7 +92,9 @@ def _render(rows: list[dict]) -> str:
     lines.append("   微调模型 vs 原版模型标准朗读。听「安逸」「一哈」「耍」的读音。")
     lines.append("2. `sft_female_01.wav` vs `base_zeroshot_sichuan.wav`：微调模型 vs 零样本克隆。")
     lines.append("   后者回读 CER 0.250，是合成不稳定，不是口音更浓。")
-    lines.append("3. `sft_female_02.wav` vs `mandarin_01.wav`：川话 vs 普通话，确认普通话能力没丢。")
+    lines.append(
+        "3. `sft_female_02.wav` vs `mandarin_01.wav`：川话 vs 普通话，确认普通话能力没丢。"
+    )
     return "\n".join(lines) + "\n"
 
 

@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 from .audio import concat_wavs, write_wav
 from .client import SpeechApiError, SpeechClient

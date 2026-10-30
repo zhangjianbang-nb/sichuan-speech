@@ -16,9 +16,10 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 GPU_RE = re.compile(r"^\d+(,\d+)*$")
 
@@ -113,7 +114,9 @@ class Settings:
             host=pick("SICHUAN_HOST", "HOST", default="0.0.0.0") or "0.0.0.0",
             port=int(pick("SICHUAN_PORT", "PORT", default="8100") or "8100"),
             log_level=(pick("SICHUAN_LOG_LEVEL", default="INFO") or "INFO").upper(),
-            cosyvoice_home=Path(pick("SICHUAN_COSYVOICE_HOME", default="~/CosyVoice") or "~/CosyVoice"),
+            cosyvoice_home=Path(
+                pick("SICHUAN_COSYVOICE_HOME", default="~/CosyVoice") or "~/CosyVoice"
+            ),
             base_model_dir=Path(
                 pick("SICHUAN_BASE_DIR", "BASE_DIR", default="~/models/CosyVoice2-0.5B")
                 or "~/models/CosyVoice2-0.5B"
@@ -140,13 +143,20 @@ class Settings:
                 )
                 or "~/chuan/data/raw/magic_tts/1776909066881_g4plqjyx_32946.wav"
             ),
-            prompt_text=pick("SICHUAN_PROMPT_TEXT", default="领导想安排我转岗，我礼貌拒绝，我更想在现在的岗位发展。")
+            prompt_text=pick(
+                "SICHUAN_PROMPT_TEXT",
+                default="领导想安排我转岗，我礼貌拒绝，我更想在现在的岗位发展。",
+            )
             or "领导想安排我转岗，我礼貌拒绝，我更想在现在的岗位发展。",
             official_prompt_wav=Path(
-                pick("SICHUAN_OFFICIAL_PROMPT_WAV", default="~/CosyVoice/asset/zero_shot_prompt.wav")
+                pick(
+                    "SICHUAN_OFFICIAL_PROMPT_WAV", default="~/CosyVoice/asset/zero_shot_prompt.wav"
+                )
                 or "~/CosyVoice/asset/zero_shot_prompt.wav"
             ),
-            official_prompt_text=pick("SICHUAN_OFFICIAL_PROMPT_TEXT", default="希望你以后能够做的比我还好呦。")
+            official_prompt_text=pick(
+                "SICHUAN_OFFICIAL_PROMPT_TEXT", default="希望你以后能够做的比我还好呦。"
+            )
             or "希望你以后能够做的比我还好呦。",
             tts_fp16=_as_bool(pick("SICHUAN_TTS_FP16", default="1"), default=True),
             asr_device=pick("SICHUAN_ASR_DEVICE", default="cpu") or "cpu",

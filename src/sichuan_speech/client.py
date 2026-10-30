@@ -13,9 +13,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 
 class SpeechApiError(RuntimeError):
@@ -41,9 +42,8 @@ def encode_multipart(
     for name, value in fields.items():
         chunks.append(
             (
-                f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n'
-                f"{value}\r\n"
-            ).encode("utf-8")
+                f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
+            ).encode()
         )
     for name, (filename, content, content_type) in files.items():
         safe_name = filename.replace('"', "_").replace("\r", "_").replace("\n", "_")
@@ -51,11 +51,11 @@ def encode_multipart(
             (
                 f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"; '
                 f'filename="{safe_name}"\r\nContent-Type: {content_type}\r\n\r\n'
-            ).encode("utf-8")
+            ).encode()
         )
         chunks.append(content)
         chunks.append(b"\r\n")
-    chunks.append(f"--{boundary}--\r\n".encode("utf-8"))
+    chunks.append(f"--{boundary}--\r\n".encode())
     return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
 
 
@@ -218,7 +218,7 @@ def _extract_detail(body: bytes) -> str | None:
     """FastAPI puts errors in ``{"detail": ...}``; fall back to raw text."""
     try:
         payload = json.loads(body.decode("utf-8"))
-    except Exception:  # noqa: BLE001
+    except Exception:
         text = body.decode("utf-8", "replace").strip()
         return text[:300] if text else None
     detail = payload.get("detail") if isinstance(payload, dict) else None

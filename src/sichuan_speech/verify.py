@@ -15,9 +15,9 @@ import argparse
 import json
 import sys
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Sequence
 
 from .client import SpeechApiError, SpeechClient
 from .text import cer
@@ -193,7 +193,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--n-samples", type=int, default=3, help="best-of-N candidates per request")
     parser.add_argument("--max-cer", type=float, default=0.25, help="per-voice CER ceiling")
     parser.add_argument("--expect-gpu", default="1", help="expected GPU id ('' to skip)")
-    parser.add_argument("--json", dest="json_path", default="", help="also write the report as JSON")
+    parser.add_argument(
+        "--json", dest="json_path", default="", help="also write the report as JSON"
+    )
     return parser
 
 

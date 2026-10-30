@@ -40,7 +40,10 @@ def test_encode_multipart_includes_file_and_sanitises_filename():
 
 
 def test_extract_detail_reads_fastapi_detail():
-    assert _extract_detail(json.dumps({"detail": "text must not be empty"}).encode()) == "text must not be empty"
+    assert (
+        _extract_detail(json.dumps({"detail": "text must not be empty"}).encode())
+        == "text must not be empty"
+    )
 
 
 def test_extract_detail_serialises_list_detail():
@@ -56,7 +59,13 @@ def test_extract_detail_falls_back_to_plain_text():
 def test_tts_response_parses_headers():
     response = TtsResponse(
         audio=b"RIFF",
-        headers={"x-duration": "1.25", "x-rtf": "0.31", "x-samples": "3", "x-best-cer": "0.0000", "x-sample-rate": "22050"},
+        headers={
+            "x-duration": "1.25",
+            "x-rtf": "0.31",
+            "x-samples": "3",
+            "x-best-cer": "0.0000",
+            "x-sample-rate": "22050",
+        },
     )
     assert response.duration_s == 1.25
     assert response.rtf == 0.31
@@ -94,20 +103,28 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self):
         if self.path == "/health":
-            self._send(200, json.dumps({"ok": True, "version": "2.0.0", "gpu": "1"}).encode(), {"Content-Type": "application/json"})
+            self._send(
+                200,
+                json.dumps({"ok": True, "version": "2.0.0", "gpu": "1"}).encode(),
+                {"Content-Type": "application/json"},
+            )
         elif self.path == "/voices":
             self._send(200, json.dumps({"voices": [{"id": "sichuan", "available": True}]}).encode())
         else:
             self._send(404, b'{"detail": "not found"}', {"Content-Type": "application/json"})
 
-    def do_POST(self):  # noqa: N802
+    def do_POST(self):
         length = int(self.headers.get("Content-Length", "0"))
         body = self.rfile.read(length)
         if self.path == "/tts":
             if b"fail" in body:
-                self._send(400, b'{"detail": "text must not be empty"}', {"Content-Type": "application/json"})
+                self._send(
+                    400,
+                    b'{"detail": "text must not be empty"}',
+                    {"Content-Type": "application/json"},
+                )
                 return
             self._send(
                 200,
@@ -121,7 +138,10 @@ class _Handler(BaseHTTPRequestHandler):
                 },
             )
         elif self.path == "/asr":
-            self._send(200, json.dumps({"text": "今天天气好安逸哦", "model": "ft", "elapsed_s": 0.5}).encode())
+            self._send(
+                200,
+                json.dumps({"text": "今天天气好安逸哦", "model": "ft", "elapsed_s": 0.5}).encode(),
+            )
         else:
             self._send(404, b"nope")
 

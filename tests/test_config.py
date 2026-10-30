@@ -48,7 +48,9 @@ def test_from_env_reads_primary_names():
 
 
 def test_from_env_falls_back_to_legacy_aliases():
-    settings = Settings.from_env({"CUDA_VISIBLE_DEVICES": "0,1", "BASE_DIR": "/tmp/base", "ASR_CKPT": "/tmp/a.pt"})
+    settings = Settings.from_env(
+        {"CUDA_VISIBLE_DEVICES": "0,1", "BASE_DIR": "/tmp/base", "ASR_CKPT": "/tmp/a.pt"}
+    )
     assert settings.gpu == "0,1"
     assert settings.base_model_dir == Path("/tmp/base")
     assert settings.asr_ckpt == Path("/tmp/a.pt")

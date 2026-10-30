@@ -20,9 +20,10 @@ import logging
 import os
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Protocol
+from typing import Annotated, Any, Protocol
 
 import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
@@ -41,16 +42,15 @@ logger = logging.getLogger(__name__)
 
 
 class TtsEngine(Protocol):
-    def synthesize(self, text: str, voice: Voice, *, speed: float = 1.0) -> tuple[np.ndarray, int]:
-        ...
+    def synthesize(
+        self, text: str, voice: Voice, *, speed: float = 1.0
+    ) -> tuple[np.ndarray, int]: ...
 
-    def list_speakers(self) -> list[str]:
-        ...
+    def list_speakers(self) -> list[str]: ...
 
 
 class AsrEngine(Protocol):
-    def transcribe_array(self, wav: np.ndarray) -> str:
-        ...
+    def transcribe_array(self, wav: np.ndarray) -> str: ...
 
 
 @dataclass
@@ -138,9 +138,7 @@ class SpeechService:
     def validate_voice(self, voice_id: str) -> Voice:
         voice = self.voices.get(voice_id)
         if voice is None:
-            raise ValueError(
-                f"unknown voice {voice_id!r}; available: {', '.join(self.voices)}"
-            )
+            raise ValueError(f"unknown voice {voice_id!r}; available: {', '.join(self.voices)}")
         return voice
 
     def validate_speed(self, speed: float) -> float:
@@ -282,7 +280,7 @@ def web_dir() -> Path:
         path = Path(str(resource))
         if path.exists():
             return path
-    except Exception:  # noqa: BLE001 - zip importers may not expose a real path
+    except Exception:
         pass
     return Path(__file__).resolve().parent / "web"
 
@@ -342,16 +340,16 @@ def create_app(settings: Settings | None = None, service: SpeechService | None =
 
     @app.post("/tts")
     def tts(
-        text: str = Form(...),
-        voice: str = Form("sichuan"),
-        speed: float = Form(1.0),
-        n_samples: int | None = Form(None),
+        text: Annotated[str, Form()],
+        voice: Annotated[str, Form()] = "sichuan",
+        speed: Annotated[float, Form()] = 1.0,
+        n_samples: Annotated[int | None, Form()] = None,
     ) -> Response:
         try:
             result = service.synthesize(text, voice, speed, n_samples)
         except (ValueError, VoiceUnavailable) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
-        except Exception as exc:  # noqa: BLE001 - surface engine failures as 503
+        except Exception as exc:
             logger.exception("TTS request failed")
             raise HTTPException(
                 status_code=503, detail=f"TTS failed: {type(exc).__name__}: {exc}"
@@ -368,7 +366,9 @@ def create_app(settings: Settings | None = None, service: SpeechService | None =
         return Response(result.audio, media_type="audio/wav", headers=headers)
 
     @app.post("/asr")
-    def asr(file: UploadFile = File(...), model: str = Form("ft")) -> dict[str, Any]:
+    def asr(
+        file: Annotated[UploadFile, File()], model: Annotated[str, Form()] = "ft"
+    ) -> dict[str, Any]:
         data = file.file.read()
         try:
             result = service.transcribe(data, file.filename or "audio.wav", model)
@@ -376,7 +376,7 @@ def create_app(settings: Settings | None = None, service: SpeechService | None =
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except AudioDecodeError as exc:
             raise HTTPException(status_code=415, detail=str(exc)) from exc
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.exception("ASR request failed")
             raise HTTPException(
                 status_code=503, detail=f"ASR failed: {type(exc).__name__}: {exc}"

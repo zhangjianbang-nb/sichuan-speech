@@ -86,7 +86,7 @@ def build_voices(settings: Settings) -> dict[str, Voice]:
 def _ensure_cosyvoice_importable(settings: Settings) -> None:
     """CosyVoice is usually a git checkout, not a pip package."""
     try:
-        import cosyvoice  # noqa: F401
+        import cosyvoice
     except ImportError:
         for candidate in (
             settings.cosyvoice_home,
@@ -163,9 +163,7 @@ class CosyVoiceEngine:
                     f"speaker {voice.speaker!r} is not in {self.model_dir.name} "
                     f"(available: {', '.join(speakers) or 'none'})"
                 )
-            iterator = self.model.inference_sft(
-                text, voice.speaker, stream=False, speed=speed
-            )
+            iterator = self.model.inference_sft(text, voice.speaker, stream=False, speed=speed)
         elif voice.engine == "zero_shot":
             if voice.prompt_wav is None or not Path(voice.prompt_wav).exists():
                 raise VoiceUnavailable(f"prompt audio missing: {voice.prompt_wav}")

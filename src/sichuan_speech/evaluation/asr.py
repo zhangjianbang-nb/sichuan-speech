@@ -10,8 +10,8 @@ mixing ITN settings produced a fake improvement in round 1 (see
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable, Sequence
 
 from ..asr import SenseVoiceRecognizer, load_recognizer
 from ..config import Settings

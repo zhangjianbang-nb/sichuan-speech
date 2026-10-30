@@ -19,8 +19,9 @@ from __future__ import annotations
 import glob
 import logging
 import re
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -121,21 +122,32 @@ def evaluate_tts(
     report["anchor_real_mandarin"] = {
         "acoustic": aggregate([acoustic_features(row["wav"]) for row in mandarin_rows]),
         "mean_cer": round(
-            sum(char_error_stats(row["text"], transcribe(row["wav"])).errors for row in mandarin_rows)
+            sum(
+                char_error_stats(row["text"], transcribe(row["wav"])).errors
+                for row in mandarin_rows
+            )
             / max(1, sum(len(row["text"]) for row in mandarin_rows)),
             4,
         ),
     }
     logger.info("anchors done")
 
-    base_engine = CosyVoiceEngine(settings.base_model_dir, fp16=settings.tts_fp16, settings=settings)
+    base_engine = CosyVoiceEngine(
+        settings.base_model_dir, fp16=settings.tts_fp16, settings=settings
+    )
     base_mandarin = generate(
-        base_engine.model, SICHUAN_SENTENCES, output / "base_mandarin_prompt",
-        mode="zero_shot", prompt=mandarin_prompt,
+        base_engine.model,
+        SICHUAN_SENTENCES,
+        output / "base_mandarin_prompt",
+        mode="zero_shot",
+        prompt=mandarin_prompt,
     )
     base_sichuan = generate(
-        base_engine.model, SICHUAN_SENTENCES, output / "base_sichuan_prompt",
-        mode="zero_shot", prompt=sichuan_prompt,
+        base_engine.model,
+        SICHUAN_SENTENCES,
+        output / "base_sichuan_prompt",
+        mode="zero_shot",
+        prompt=sichuan_prompt,
     )
     del base_engine
     torch.cuda.empty_cache()
@@ -156,8 +168,12 @@ def evaluate_tts(
     )
     del sft_engine
 
-    report["base_mandarin_prompt"] = _score_set(base_mandarin, SICHUAN_SENTENCES, "base_mandarin_prompt", transcribe)
-    report["base_sichuan_prompt"] = _score_set(base_sichuan, SICHUAN_SENTENCES, "base_sichuan_prompt", transcribe)
+    report["base_mandarin_prompt"] = _score_set(
+        base_mandarin, SICHUAN_SENTENCES, "base_mandarin_prompt", transcribe
+    )
+    report["base_sichuan_prompt"] = _score_set(
+        base_sichuan, SICHUAN_SENTENCES, "base_sichuan_prompt", transcribe
+    )
     report["sft_female"] = _score_set(sft_female, SICHUAN_SENTENCES, "sft_female", transcribe)
     if sft_avg is not None:
         report["sft_avg"] = _score_set(sft_avg, SICHUAN_SENTENCES, "sft_avg", transcribe)
@@ -188,7 +204,13 @@ def cross_asr(
 
     subsets = [
         name
-        for name in ("base_mandarin_prompt", "base_sichuan_prompt", "sft_female", "sft_avg", "sft_mandarin")
+        for name in (
+            "base_mandarin_prompt",
+            "base_sichuan_prompt",
+            "sft_female",
+            "sft_avg",
+            "sft_mandarin",
+        )
         if (directory / name).is_dir()
     ]
     report: dict[str, Any] = {}
@@ -227,7 +249,9 @@ def cross_asr(
             "delta": round(cer_ft - cer_base, 4),
             "rows": rows,
         }
-        logger.info("%-22s base %.4f  ft %.4f  delta %+.4f", subset, cer_base, cer_ft, cer_ft - cer_base)
+        logger.info(
+            "%-22s base %.4f  ft %.4f  delta %+.4f", subset, cer_base, cer_ft, cer_ft - cer_base
+        )
 
     save_json(output / "cross_asr.json", report)
     return report
@@ -294,7 +318,9 @@ def sweep_checkpoints(
             ]
             from ..audio import write_wav
 
-            path = write_wav(directory / f"{index:02d}.wav", np.concatenate(chunks), engine.sample_rate)
+            path = write_wav(
+                directory / f"{index:02d}.wav", np.concatenate(chunks), engine.sample_rate
+            )
             stats_base = char_error_stats(text, base.transcribe(str(path)))
             stats_ft = char_error_stats(text, finetuned.transcribe(str(path)))
             base_errors += stats_base.errors
@@ -313,7 +339,11 @@ def sweep_checkpoints(
         }
         logger.info(
             "%-8s cer_base %.4f  cer_ft %.4f  rate %.2f  dur %.2f",
-            tag, cer_base, cer_ft, report[tag]["rate"] or 0, report[tag]["dur"] or 0,
+            tag,
+            cer_base,
+            cer_ft,
+            report[tag]["rate"] or 0,
+            report[tag]["dur"] or 0,
         )
         save_json(output / "sweep.json", report)
 

@@ -21,7 +21,9 @@ from sichuan_speech.logging_utils import configure_logging  # noqa: E402
 
 def build_parser(description: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--gpu", default=None, help="CUDA_VISIBLE_DEVICES value (default: settings)")
+    parser.add_argument(
+        "--gpu", default=None, help="CUDA_VISIBLE_DEVICES value (default: settings)"
+    )
     parser.add_argument("--log-level", default="INFO", help="DEBUG/INFO/WARNING/ERROR")
     return parser
 

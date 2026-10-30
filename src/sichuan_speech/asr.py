@@ -11,8 +11,9 @@ in round 1 was letting the two paths differ.
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -84,7 +85,7 @@ class SenseVoiceRecognizer:
         payload: Any
         try:
             payload = torch.load(str(path), map_location="cpu", weights_only=True)
-        except Exception:  # noqa: BLE001 - old checkpoints may hold non-tensor metadata
+        except Exception:
             payload = torch.load(str(path), map_location="cpu", weights_only=False)
         state = payload["model"] if isinstance(payload, dict) and "model" in payload else payload
         missing, unexpected = self.model.load_state_dict(state, strict=False)

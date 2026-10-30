@@ -8,13 +8,14 @@ speaker-disjoint protocol; the default trains the model the accent script loads.
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
 def main() -> int:
     parser = build_parser(__doc__ or "")
-    parser.add_argument("--kespeech-cv", action="store_true", help="run the speaker-disjoint CV protocol")
+    parser.add_argument(
+        "--kespeech-cv", action="store_true", help="run the speaker-disjoint CV protocol"
+    )
     parser.add_argument("--out", default=None)
     parser.add_argument("--epochs", type=int, default=6)
     parser.add_argument("--folds", type=int, default=5)
@@ -26,12 +27,19 @@ def main() -> int:
     if args.kespeech_cv:
         from sichuan_speech.training.dialect_clf import train_kespeech_classifier
 
-        summary = train_kespeech_classifier(settings, out=args.out, folds=args.folds, seed=args.seed)
+        summary = train_kespeech_classifier(
+            settings, out=args.out, folds=args.folds, seed=args.seed
+        )
     else:
         from sichuan_speech.training.dialect_clf import train_dialect_classifier
 
         summary = train_dialect_classifier(
-            settings, out_dir=args.out, epochs=args.epochs, gpu=args.gpu, seed=args.seed, batch_size=args.batch_size
+            settings,
+            out_dir=args.out,
+            epochs=args.epochs,
+            gpu=args.gpu,
+            seed=args.seed,
+            batch_size=args.batch_size,
         )
     for key, value in summary.items():
         print(f"{key:>24}: {value}")

@@ -8,18 +8,23 @@ speaker and the averaged speaker, and copies ``llm_embedding`` to ``embedding`` 
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
 def main() -> int:
     parser = build_parser(__doc__ or "")
     parser.add_argument("--ckpt", required=True, help="epoch_N_whole.pt from the SFT run")
-    parser.add_argument("--out", default=None, help="destination model dir (default: <work_root>/models/cosyvoice2-sichuan)")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="destination model dir (default: <work_root>/models/cosyvoice2-sichuan)",
+    )
     parser.add_argument("--prompt-wav", default=None)
     parser.add_argument("--prompt-text", default=None)
     parser.add_argument("--spk-id", default="sichuan_female")
-    parser.add_argument("--emb-pt", default=None, help="spk2embedding.pt (default: <data_root>/sft/train)")
+    parser.add_argument(
+        "--emb-pt", default=None, help="spk2embedding.pt (default: <data_root>/sft/train)"
+    )
     parser.add_argument("--utt2spk", default=None, help="utt2spk (default: <data_root>/sft/train)")
     parser.add_argument("--spk-prefix", default="ks_")
     parser.add_argument("--avg-spk-id", default="sichuan_avg")

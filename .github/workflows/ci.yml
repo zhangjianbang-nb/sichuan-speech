@@ -37,7 +37,9 @@ jobs:
           python -m pip install -e ".[serve,dev]"
 
       - name: Ruff
-        run: ruff check src tests scripts
+        run: |
+          ruff check src tests scripts
+          ruff format --check src tests scripts
 
       - name: Mypy
         run: mypy

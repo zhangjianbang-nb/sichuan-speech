@@ -8,7 +8,6 @@ reproduces the failed recipe (8 epochs, lr 2e-5, blank emotion token) for the re
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
@@ -23,7 +22,9 @@ def main() -> int:
     parser.add_argument("--manifest", default=None)
     parser.add_argument("--log-every", type=int, default=50)
     parser.add_argument("--seed", type=int, default=1986)
-    parser.add_argument("--smoke", action="store_true", help="few steps, tiny batch, for wiring checks")
+    parser.add_argument(
+        "--smoke", action="store_true", help="few steps, tiny batch, for wiring checks"
+    )
     args = parser.parse_args()
     settings = settings_from_args(args)
 

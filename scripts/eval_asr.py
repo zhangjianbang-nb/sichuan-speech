@@ -7,7 +7,6 @@ Both sides of the comparison go through the same CTC decode path and the same
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
@@ -16,14 +15,18 @@ def main() -> int:
     parser.add_argument("--ckpt", action="append", default=[], help="checkpoint path; repeatable")
     parser.add_argument("--out", default=None, help="output directory (default: <eval_root>)")
     parser.add_argument("--device", default="cpu")
-    parser.add_argument("--use-itn", action="store_true", help="enable ITN on both paths (not recommended)")
+    parser.add_argument(
+        "--use-itn", action="store_true", help="enable ITN on both paths (not recommended)"
+    )
     args = parser.parse_args()
     settings = settings_from_args(args)
 
     from sichuan_speech.evaluation.asr import evaluate_asr
 
     ckpts = args.ckpt or [str(settings.asr_ckpt)]
-    report = evaluate_asr(settings, ckpts=ckpts, out=args.out, use_itn=args.use_itn, device=args.device)
+    report = evaluate_asr(
+        settings, ckpts=ckpts, out=args.out, use_itn=args.use_itn, device=args.device
+    )
     for name, values in report.items():
         if isinstance(values, dict):
             print(f"{name}: {values}")

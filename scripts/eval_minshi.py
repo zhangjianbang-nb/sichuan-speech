@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-
 from _common import build_parser, settings_from_args
 
 
@@ -18,7 +17,9 @@ def main() -> int:
 
     from sichuan_speech.evaluation.minshi import evaluate_minshi
 
-    report = evaluate_minshi(settings, sft_dir=args.sft_dir, out=args.out, per_set=args.per_set, n_takes=args.n_takes)
+    report = evaluate_minshi(
+        settings, sft_dir=args.sft_dir, out=args.out, per_set=args.per_set, n_takes=args.n_takes
+    )
     for name, values in report.items():
         print(f"{name}: {values}")
     return 0

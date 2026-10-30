@@ -67,7 +67,9 @@ def test_health_and_voices(harness):
 
 def test_tts_picks_lowest_cer_and_reports_rendered_count(harness):
     client, calls = harness
-    response = client.post("/tts", data={"text": "今天天气好", "voice": "sichuan", "speed": "1.0", "n_samples": "3"})
+    response = client.post(
+        "/tts", data={"text": "今天天气好", "voice": "sichuan", "speed": "1.0", "n_samples": "3"}
+    )
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("audio/wav")
     assert response.headers["x-samples"] == "3"
@@ -108,8 +110,14 @@ def test_tts_validation_errors(harness):
     client, _ = harness
     assert client.post("/tts", data={"text": "   ", "voice": "sichuan"}).status_code == 400
     assert client.post("/tts", data={"text": "你好", "voice": "nope"}).status_code == 400
-    assert client.post("/tts", data={"text": "你好", "voice": "sichuan", "n_samples": "9"}).status_code == 400
-    assert client.post("/tts", data={"text": "你好", "voice": "sichuan", "speed": "5"}).status_code == 400
+    assert (
+        client.post("/tts", data={"text": "你好", "voice": "sichuan", "n_samples": "9"}).status_code
+        == 400
+    )
+    assert (
+        client.post("/tts", data={"text": "你好", "voice": "sichuan", "speed": "5"}).status_code
+        == 400
+    )
 
 
 def test_tts_text_length_limit(harness):
@@ -121,7 +129,9 @@ def test_tts_text_length_limit(harness):
 
 def test_unavailable_voice_is_reported_not_crashed(settings: Settings):
     # No sft directory: the Sichuan voice must be listed as unavailable with a reason.
-    service = SpeechService(settings, tts_factory=lambda model_dir: FakeTts([]), asr_factory=lambda ft: FakeAsr("x"))
+    service = SpeechService(
+        settings, tts_factory=lambda model_dir: FakeTts([]), asr_factory=lambda ft: FakeAsr("x")
+    )
     client = TestClient(create_app(settings, service))
     voices = {voice["id"]: voice for voice in client.get("/voices").json()["voices"]}
     assert voices["sichuan"]["available"] is False
@@ -138,7 +148,9 @@ def test_asr_routes_to_selected_model(harness, tmp_path):
 
     payload = wav_bytes(np.zeros(1600, dtype=np.float32), 16000)
     ft = client.post("/asr", files={"file": ("a.wav", payload, "audio/wav")}, data={"model": "ft"})
-    base = client.post("/asr", files={"file": ("a.wav", payload, "audio/wav")}, data={"model": "base"})
+    base = client.post(
+        "/asr", files={"file": ("a.wav", payload, "audio/wav")}, data={"model": "base"}
+    )
     assert ft.status_code == 200
     assert ft.json()["text"] == "方言回读"
     assert base.json()["text"] == "普通话回读"
@@ -149,14 +161,18 @@ def test_asr_validation(harness):
     client, _ = harness
     assert client.post("/asr", files={"file": ("a.wav", b"", "audio/wav")}).status_code == 400
     assert (
-        client.post("/asr", files={"file": ("a.wav", b"RIFF", "audio/wav")}, data={"model": "wrong"}).status_code
+        client.post(
+            "/asr", files={"file": ("a.wav", b"RIFF", "audio/wav")}, data={"model": "wrong"}
+        ).status_code
         == 400
     )
 
 
 def test_asr_upload_limit(ready_settings: Settings):
     limited = ready_settings.with_overrides(max_upload_mb=1)
-    service = SpeechService(limited, tts_factory=lambda d: FakeTts([]), asr_factory=lambda ft: FakeAsr("x"))
+    service = SpeechService(
+        limited, tts_factory=lambda d: FakeTts([]), asr_factory=lambda ft: FakeAsr("x")
+    )
     client = TestClient(create_app(limited, service))
     big = b"0" * (1024 * 1024 + 10)
     response = client.post("/asr", files={"file": ("big.wav", big, "audio/wav")})

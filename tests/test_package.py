@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import tomllib
 from pathlib import Path
+
+import tomllib
 
 import sichuan_speech
 from sichuan_speech.service import web_dir
@@ -56,7 +57,7 @@ def test_web_ui_references_local_assets_only():
 def test_optional_dependency_groups_are_declared():
     extras = _pyproject()["project"]["optional-dependencies"]
     for group in ("serve", "train", "dev"):
-        assert group in extras and extras[group]
+        assert extras.get(group)
     assert any(item.startswith("fastapi") for item in extras["serve"])
     assert any(item.startswith("torch") for item in extras["train"])
 

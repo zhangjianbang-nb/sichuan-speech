@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from .client import SpeechApiError, SpeechClient
 from .text import cer
@@ -44,7 +44,9 @@ def run_probe(
         for sample in range(n):
             response = client.tts(text, voice, n_samples=1)
             response.save(output / f"{index}_{voice}_{sample}.wav")
-            hypothesis = client.asr(response.audio, f"{index}_{voice}_{sample}.wav", model="ft").text
+            hypothesis = client.asr(
+                response.audio, f"{index}_{voice}_{sample}.wav", model="ft"
+            ).text
             hypotheses.append(hypothesis)
             cers.append(round(cer(text, hypothesis), 4))
         print(f"\n[{index}] {voice}  {text}")
@@ -70,9 +72,7 @@ def run_probe(
         "n": n,
         "mean_of_best": round(sum(r["best"] for r in results) / len(results), 4),
         "mean_of_mean": round(sum(r["mean"] for r in results) / len(results), 4),
-        "mean_exact_rate": round(
-            sum(r["exact_hits"] for r in results) / (len(results) * n), 4
-        ),
+        "mean_exact_rate": round(sum(r["exact_hits"] for r in results) / (len(results) * n), 4),
         "cases": results,
     }
     (output / "variance.json").write_text(

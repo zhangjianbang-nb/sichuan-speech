@@ -22,7 +22,12 @@ class FakeClient:
             raise SpeechApiError(503, "engine exploded")
         return TtsResponse(
             audio=b"RIFF" + b"\x00" * 32,
-            headers={"x-duration": "1.50", "x-rtf": "0.25", "x-samples": str(n_samples or 1), "x-best-cer": "0.0"},
+            headers={
+                "x-duration": "1.50",
+                "x-rtf": "0.25",
+                "x-samples": str(n_samples or 1),
+                "x-best-cer": "0.0",
+            },
         )
 
     def asr(self, audio, filename="a.wav", *, model="ft"):
@@ -32,7 +37,11 @@ class FakeClient:
 
 
 def test_verify_passes_when_transcripts_match():
-    report = verify(FakeClient({"ft": "今天天气好", "base": "今天天气好"}), [("sichuan", "今天天气好")], n_samples=1)
+    report = verify(
+        FakeClient({"ft": "今天天气好", "base": "今天天气好"}),
+        [("sichuan", "今天天气好")],
+        n_samples=1,
+    )
     assert report.ok is True
     assert report.checks[0].cer_ft == 0.0
     assert report.checks[0].note == ""
@@ -40,13 +49,19 @@ def test_verify_passes_when_transcripts_match():
 
 
 def test_verify_flags_dialect_cer_above_threshold():
-    report = verify(FakeClient({"ft": "今天下雨了", "base": "今天天气好"}), [("sichuan", "今天天气好")], max_cer=0.2)
+    report = verify(
+        FakeClient({"ft": "今天下雨了", "base": "今天天气好"}),
+        [("sichuan", "今天天气好")],
+        max_cer=0.2,
+    )
     assert report.ok is False
     assert "dialect ASR CER" in report.checks[0].note
 
 
 def test_verify_flags_broken_synthesis_for_mandarin_voice():
-    report = verify(FakeClient({"ft": "乱码", "base": "乱码"}), [("mandarin", "今天天气好")], max_cer=0.2)
+    report = verify(
+        FakeClient({"ft": "乱码", "base": "乱码"}), [("mandarin", "今天天气好")], max_cer=0.2
+    )
     assert report.ok is False
     assert "synthesis may be broken" in report.checks[0].note
 
@@ -67,7 +82,9 @@ def test_verify_warns_on_gpu_and_missing_voices():
         def voices(self):
             return {"voices": [{"id": "sichuan"}]}
 
-    report = verify(ThinClient({"ft": "你好", "base": "你好"}), [("sichuan", "你好")], expect_gpu="1")
+    report = verify(
+        ThinClient({"ft": "你好", "base": "你好"}), [("sichuan", "你好")], expect_gpu="1"
+    )
     assert any("GPU" in warning for warning in report.warnings)
     assert any("mandarin" in warning for warning in report.warnings)
     assert report.ok is True  # warnings do not fail the run
@@ -80,7 +97,11 @@ def test_verify_without_checks_is_not_ok():
 
 
 def test_summary_and_dict_are_serialisable():
-    report = verify(FakeClient({"ft": "今天天气好", "base": "今天天气好"}), [("sichuan", "今天天气好")], n_samples=2)
+    report = verify(
+        FakeClient({"ft": "今天天气好", "base": "今天天气好"}),
+        [("sichuan", "今天天气好")],
+        n_samples=2,
+    )
     payload = report.as_dict()
     assert payload["ok"] is True
     assert payload["checks"][0]["duration_s"] == 1.5
