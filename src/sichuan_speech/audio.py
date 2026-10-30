@@ -131,7 +131,7 @@ def resample(wav: np.ndarray, sr_in: int, sr_out: int) -> np.ndarray:
     if sr_in == sr_out or array.size == 0:
         return array
     try:
-        from scipy.signal import resample_poly  # type: ignore[import-not-found]
+        from scipy.signal import resample_poly
 
         divisor = gcd(int(sr_in), int(sr_out))
         out = resample_poly(array, int(sr_out) // divisor, int(sr_in) // divisor)

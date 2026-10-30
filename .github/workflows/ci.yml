@@ -42,7 +42,28 @@ jobs:
           ruff format --check src tests scripts
 
       - name: Mypy
-        run: mypy
+        run: |
+          set +e
+          mypy --no-pretty > mypy.txt 2>&1
+          status=$?
+          cat mypy.txt
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+            import re
+
+            shown = 0
+            with open("mypy.txt", encoding="utf-8") as handle:
+                for line in handle:
+                    match = re.match(r"^(.+?):(\d+): error: (.+)$", line.rstrip())
+                    if match and shown < 50:
+                        print(
+                            f"::error file={match.group(1)},line={match.group(2)}"
+                            f"::{match.group(3)}"
+                        )
+                        shown += 1
+            PY
+            exit 1
+          fi
 
       - name: Pytest
         run: pytest --cov=sichuan_speech --cov-report=term-missing
