@@ -66,6 +66,8 @@ jobs:
           fi
 
       - name: Pytest
+        env:
+          PYTHONPATH: src
         run: |
           set +e
           pytest --cov=sichuan_speech --cov-report=term-missing > pytest.txt 2>&1

@@ -5,7 +5,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10
+    import tomli as tomllib
 
 import sichuan_speech
 from sichuan_speech.service import web_dir
