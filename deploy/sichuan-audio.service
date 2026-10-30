@@ -1,0 +1,21 @@
+[Unit]
+Description=Sichuan speech API (CosyVoice2-SFT TTS + SenseVoice-SFT ASR)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/chuan
+ExecStart=%h/audio/venv/bin/sichuan-speech serve
+Restart=on-failure
+RestartSec=5
+Environment=SICHUAN_GPU=1
+Environment=SICHUAN_PORT=8100
+Environment=SICHUAN_COSYVOICE_HOME=%h/CosyVoice
+Environment=SICHUAN_BASE_DIR=%h/models/CosyVoice2-0.5B
+Environment=SICHUAN_SFT_DIR=%h/chuan/models/cosyvoice2-sichuan2
+Environment=SICHUAN_ASR_BASE_DIR=%h/models/SenseVoiceSmall
+Environment=SICHUAN_ASR_CKPT=%h/chuan/models/sensevoice-sichuan.pt
+# GPU1 only: GPU0 is reserved for ComfyUI
+
+[Install]
+WantedBy=default.target

@@ -1,50 +1,97 @@
-# 训练配方
+# 训练全流程
 
-两段训练：CosyVoice2 的 LLM 做 TTS 方言迁移，SenseVoiceSmall 做 ASR 方言迁移。
-全部在单张 RTX 4090（GPU1）上完成，fp32，不装/不改 torch。GPU0 留给 ComfyUI。
+两段训练：CosyVoice2-0.5B 的 LLM 做 TTS 方言迁移，SenseVoiceSmall 做 ASR 方言迁移。
+全部在单张 RTX 4090（GPU1，24 GB）上完成，fp32，不动 torch、不装新算子。GPU0 留给 ComfyUI。
 
-## 一、TTS：CosyVoice2-0.5B LLM SFT
+数据从哪来、怎么清洗，见 [data-collection.md](data-collection.md)。踩过的坑与经验，
+见 [training-notes.md](training-notes.md)。
 
-### 数据流水线
+## 0. 环境
 
-CosyVoice2 用的是 Kaldi 风格目录 + 预抽取特征：
+```bash
+# 远端机器（示例：192.168.3.178）
+cd ~/chuan/repo
+python -m venv ~/audio/venv          # 已有可跳过
+~/audio/venv/bin/pip install -e ".[train]"
+
+export SICHUAN_COSYVOICE_HOME=~/CosyVoice
+export SICHUAN_BASE_DIR=~/models/CosyVoice2-0.5B
+export SICHUAN_DATA_ROOT=~/chuan/data
+export SICHUAN_WORK_ROOT=~/chuan
+export SICHUAN_GPU=1
+```
+
+`[train]` 额外依赖：torch/torchaudio（按机器装，不要用 pip 重装）、funasr、librosa、
+pyarrow、scikit-learn、onnxruntime。CosyVoice 本身不打包进 wheel，用 `SICHUAN_COSYVOICE_HOME`
+指过去。
+
+### 两处必须先打的源码补丁
+
+1. **transformers ≥ 5 的 KV cache mask**（不打会出现乱码语音）：
+
+   ```bash
+   bash scripts/patch_transformers5.sh
+   ```
+
+   原理与现场取证见 [incident-transformers5.md](incident-transformers5.md)。
+
+2. **bf16 权重转 fp32**：在 `cosyvoice/bin/train.py` 载入 checkpoint 之后加一行
+   `model = model.float()`，并且**不要**传 `--use_amp`。原因见
+   [training-notes.md](training-notes.md) §1。
+
+## 1. 数据准备
+
+```bash
+python scripts/extract_kespeech.py        # 400 条西南 + 300 条普通话评测集
+python scripts/prep_sichuan.py            # 1853 条人工文本川话清单
+python scripts/prep_manifest.py           # 5046 条 / 9.12 h，train 4895 + dev 151
+```
+
+## 2. TTS 特征抽取（约 13 分钟）
+
+CosyVoice2 用 Kaldi 风格目录 + 预抽特征：
 
 ```
 data/sft/{train,dev}/
-  wav.scp text utt2spk spk2utt          # 文本清单
+  wav.scp text utt2spk spk2utt          # 文本清单（上一步生成）
   spk2embedding.pt utt2embedding.pt     # campplus.onnx 抽的说话人向量
   utt2speech_token.pt                   # speech_tokenizer_v2.onnx 抽的离散 token
   parquet/{data.list,*.tar}             # make_parquet_list.py 打包
 ```
 
-命令（注意 `tools/` 在仓库根，不在 example 目录下，且必须用 venv 的 python）：
-
 ```bash
-cd /home/whu/CosyVoice
-export PYTHONPATH=/home/whu/CosyVoice:/home/whu/CosyVoice/third_party/Matcha-TTS:$PYTHONPATH
-PY=/home/whu/audio/venv/bin/python
-for x in train dev; do
-  D=/home/whu/chuan/data/sft/$x
-  $PY tools/extract_embedding.py     --dir $D --onnx_path .../campplus.onnx
-  $PY tools/extract_speech_token.py  --dir $D --onnx_path .../speech_tokenizer_v2.onnx
-  rm -rf $D/parquet; mkdir -p $D/parquet
-  $PY tools/make_parquet_list.py --num_utts_per_parquet 1000 --num_processes 10 \
-      --src_dir $D --des_dir $D/parquet
-done
+python scripts/prep_features.py --splits train dev --num-processes 10 --utts-per-parquet 1000
 ```
 
-5046 条 / 9.12 小时（train 4895 + dev 151），三步合计约 13 分钟。
+三个工具在 `<cosyvoice_home>/tools/`（不在 `examples/` 下），必须用装了 torch 的解释器跑；
+`prepare_features()` 会自动设好 `PYTHONPATH`（含 `third_party/Matcha-TTS`）。
 
-### 训练配置（相对官方 `cosyvoice2.yaml` 的改动）
+## 3. TTS 训练配置
+
+```bash
+python scripts/make_conf.py --lr 3e-6 --max-epoch 20 --log-interval 20
+# 写出 $SICHUAN_WORK_ROOT/conf/sft.yaml；仓库里的 conf/sft2.yaml 就是这次实际用的配置
+```
+
+相对官方 `cosyvoice2.yaml` 只改这几处：
 
 | 项 | 值 | 理由 |
 |---|---|---|
 | `padding.use_spk_embedding` | `True` | 多说话人语料，必须按说话人条件化 |
-| `train_conf.optim_conf.lr` | `3e-6`（首轮用过 `1e-5`） | 1e-5 在 6 小时数据上一轮就过拟合，见下 |
+| `train_conf.optim_conf.lr` | `3e-6`（首轮用过 `1e-5`） | 1e-5 在 6 小时数据上一轮就过拟合 |
 | `train_conf.scheduler` | `constantlr` | 官方 SFT 推荐 |
 | `train_conf.max_epoch` | `20`（实际跑到 8 轮就停） | 每轮存 checkpoint，按 CV loss 选 |
 | `accum_grad` | `2` | 单卡等效 batch 放大 |
 | `log_interval` | `20` | 便于观察 |
+
+## 4. 启动训练
+
+```bash
+bash scripts/train_llm.sh
+```
+
+脚本用 `torchrun --nproc_per_node=1` 拉起官方 `train.py --model llm`，路径全部由环境变量给出
+（`SICHUAN_TORCHRUN` 可指到 venv 里的绝对路径）。每轮约 2.5 分钟（454 步），显存约 16 GB。
 
 ### 第二轮 CV 曲线（lr 3e-6，9.12 小时）
 
@@ -60,82 +107,86 @@ done
 | 7 | 3.5428 | 0.2256 |
 | 8 | 3.5921 | 0.2209 |
 
-epoch 4 触底，之后单调回升 → 停止训练。每轮 2.5 分钟（454 步），显存约 16 GB。
+epoch 4 触底，之后单调回升 → 停止训练。选它是因为 CV loss 最低，**不是**因为 CER 最好
+（20 句批量上 epoch 2 的 CER 更漂亮，见 [evaluation.md](evaluation.md) §2.2）。
 
-### 踩过的坑
+## 5. 组装推理模型
 
-1. **bf16 预训练权重 + `--use_amp` 直接崩**：
-   `RuntimeError: "_amp_foreach_non_finite_check_and_unscale_cuda" not implemented for 'BFloat16'`。
-   修法是在 `train.py` 载入 checkpoint 之后加一句 `model = model.float()`，然后**去掉 `--use_amp`**。
-   CosyVoice2-0.5B 的 `CosyVoice-BlankEN/config.json` 里 `torch_dtype` 是 `bfloat16`，
-   不显式转 fp32 的话 GradScaler 会撞上不支持 bf16 的 unscale 算子。
-2. **过拟合极快**：第一轮 6.08 小时数据、lr 1e-5，CV loss 从 epoch 0 的 3.1697 只降到
-   epoch 1 的 3.1344，之后一路涨到 epoch 7 的 4.5628——有效学习只有一轮。
-   第二轮把 lr 降到 3e-6，并把语料扩到 9.12 小时、剔除噪声标签，才拿到 9 轮可用曲线。
-3. **`torchrun` 不在 PATH**：venv 里没有 `pip` 可执行文件（只有 `python -m pip`），
-   `torchrun` 要用绝对路径 `/home/whu/audio/venv/bin/torchrun`。
-4. **heredoc 里的引号会被外层 ssh 吃掉**：远程脚本一律本地写好再 `scp`，不要用
-   `ssh 'python3 - <<EOF ... EOF'` 里嵌单引号。
-5. **`pkill -f "train_asr.py"` 会杀掉自己的 ssh 会话**（exit 255），因为 ssh 命令行里
-   含有同样的字符串。用精确 pid 或 `pkill -f` 加更长的区分串。
-
-## 二、ASR：SenseVoiceSmall 全参微调
-
-### 数据格式
-
-SenseVoice 的输入是 fbank+LFR+CMVN（80 mel，lfr_m=7，lfr_n=6，即每帧 560 维）。
-文本标签不是纯文字，而是**特殊 token 前缀 + 正文**：
-
-```python
-ids = [24884, 24993, 0, 25017] + tokenizer.encode(text)
-#      <|zh|> <|Speech|> <blank> <|woitn|> + 正文
+```bash
+python scripts/build_sft_model.py \
+  --ckpt "$SICHUAN_WORK_ROOT/exp/llm2/epoch_4_whole.pt" \
+  --out  "$SICHUAN_WORK_ROOT/models/cosyvoice2-sichuan"
 ```
 
-`24884` 起是特殊 token 区，CTC 词表 25055，blank_id=0，ignore_id=-1。
-**情感位必须是 `25004`（`<|NEUTRAL|>`）**，第一轮误填 `0` 会让情感头学到 blank。
+这一步做四件事：
 
-### 第二轮配置
+1. 把 base 模型里没改的 flow / HiFi-GAN / tokenizer 文件软链过去，只替换 `llm.pt`；
+2. 注册微调说话人 `sichuan_female`（用 MagicHub 成都女声的 campplus 向量）；
+3. 用 KeSpeech 训练集全部说话人向量的均值注册 `sichuan_avg`；
+4. **把 `llm_embedding` 复制一份到 `embedding`**：`add_zero_shot_spk()` 写的是前者，
+   `frontend_sft()` 读的是后者，不复制会 `KeyError: 'embedding'`（详见 training-notes §7）。
 
-`--epochs 4 --batch 3 --lr 4e-6 --max_sec 10`，AdamW + OneCycleLR，
-`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`。
+## 6. ASR 训练
 
-DEV_CER（域内 dev 151 条）：0.1277 → 0.1159 → 0.1134 → **0.1131**。
-域内 dev 与 KeSpeech 跨说话人留出集不是一回事，正式数字看 `docs/evaluation.md` §1。
+```bash
+python scripts/train_asr.py --profile round2        # 4 epochs, lr 4e-6, batch 3, 10 s
+```
 
-**显存坑**：TTS 训练同时占着 GPU 时，batch 4 / 20 秒序列要 5.77 GB 会 OOM，
-降到 batch 3 / 12 秒仍要 5.79 GB；最后用 batch 1 / 8 秒，稳定在 5.3 GB。
-`expandable_segments:True` 能显著减少碎片。第二轮改成 batch 3 / 10 秒，稳定不 OOM。
+标签是「特殊 token 前缀 + 正文」：
 
-### 为什么加普通话回放
+```python
+ids = [24884, 24993, 25004, 25017] + tokenizer.encode(text)
+#      <|zh|> <|Speech|> <|NEUTRAL|> <|woitn|> + 正文
+```
 
-只喂方言会让模型把普通话也读成方言（灾难性遗忘）。训练集里混了 900 条 THCHS-30 普通话，
-占比 18%。结果是普通话 CER 从 0.0384 降到 0.0340（见评测文档），不退化反降。
+`24884` 起是特殊 token 区，CTC 词表 25055，`blank_id=0`，`ignore_id=-1`。
+情感位必须是 `25004`（`<|NEUTRAL|>`）；第一轮误填 `0` 让情感头学到了 blank。
 
-### 学习率的教训
+第二轮 DEV_CER（域内 dev 151 条）：0.1277 → 0.1159 → 0.1134 → **0.1131**。
+域内 dev 只用来选 epoch，正式结论看跨说话人留出集（`docs/evaluation.md` §1）。
 
-第一轮用 lr 2e-5 训 8 轮，域内 DEV_CER 最低 0.0773（epoch 4），但跨说话人留出集上
-**比基线更差**（川话 0.1258 vs 0.1078，普通话 0.0449 vs 0.0384）。域内 dev 是同一批
-说话人、同一个录音环境，过拟合被掩盖了。第二轮把 lr 降到 4e-6、数据换成干净的
-human-transcript 版本，才在两个方向都变好。
+显存：`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`，batch 3 / 10 秒稳定 5.8 GB；
+batch 4 / 20 秒会 OOM。
 
-**教训：域内 dev 只能用来选 epoch，不能用来下结论。结论必须来自跨说话人留出集。**
+## 7. 评测
 
-## 三、说话人向量的两个坑
+```bash
+python scripts/eval_asr.py --ckpt "$SICHUAN_WORK_ROOT/exp/asr2/epoch_2.pt"   # 双向 CER
+python scripts/eval_tts.py                                                    # 锚点 + 四集合
+python scripts/sweep_epochs.py --n-sent 20                                    # 逐检查点口音指标
+python scripts/eval_accent.py                                                 # 声学 + 分类器
+python scripts/check_speaker_sim.py                                           # 音色余弦
+python scripts/eval_minshi.py                                                 # 失败的平翘舌检验
+```
+
+结果写进 `$SICHUAN_EVAL_ROOT` 下的 JSON，口径与解释见 [evaluation.md](evaluation.md)。
+
+## 8. 说话人向量的两个坑
 
 1. `AutoModel.add_zero_shot_spk()` 存进 `spk2info` 的字典里有 `llm_embedding`/`flow_embedding`，
-   但 `frontend_sft()` 读的是 `spk2info[spk_id]['embedding']` —— 两个函数对 schema 的假设不一致。
-   直接 `inference_sft` 会 `KeyError: 'embedding'`。修法：把 `llm_embedding` 复制一份到 `embedding`。
+   但 `frontend_sft()` 读的是 `spk2info[spk_id]['embedding']`。两个函数对 schema 的假设不一致。
 2. **CosyVoice2 的 LLM 不用说话人向量**。读 `Qwen2LM.inference` 可以看到 `lm_input` 只由
    `[sos, text_emb, task_id, prompt_speech_token]` 拼成，没有 embedding 项。
-   所以：**发音/口音完全由 LLM 的文本→语音 token 映射决定，说话人向量只影响 flow 的音色**。
-   这也是为什么 SFT 模型换一个说话人向量就能换音色（`sichuan` vs `sichuan_avg`），但口音不变
-   ——两者的回读转写完全一致，就是这个原因。
+   所以发音/口音完全由 LLM 的文本→语音 token 映射决定，说话人向量只影响 flow 的音色。
+   这就是为什么换一个说话人向量能换音色（`sichuan_female` vs `sichuan_avg`），但口音不变
+   ——两者的回读转写完全一致。
 
-## 四、没做的事
+## 9. 时间与资源
+
+| 阶段 | 耗时 | 显存 |
+|---|---|---|
+| 数据准备 + 评测集抽取 | 5–10 分钟 | CPU |
+| 特征抽取（embedding/token/parquet） | 约 13 分钟 | CPU + ONNX |
+| TTS LLM SFT 每轮 | 约 2.5 分钟 | 16 GB |
+| TTS 共 9 轮（跑到 epoch 8） | 约 23 分钟 | 16 GB |
+| ASR 每轮（4895 条） | 约 12 分钟 | 5.8 GB |
+| ASR 共 4 轮 | 约 48 分钟 | 5.8 GB |
+| 全套评测 | 30–40 分钟 | CPU 为主 |
+
+## 10. 没做的事
 
 1. **flow 与 HiFi-GAN 没有微调**。官方 SFT 配方可以同时训 flow，理论上能改善音色保真和
-   韵律。本仓库没做，因为无法用客观指标验证收益（flow 的改善只能靠听），
-   在时间预算内不冒险。
-2. **没做 RL**。用户提到"必要时 RL 训练"，但方言 TTS 缺少可靠的奖励信号（没有方言
-   判别器、没有可用的发音评分器），强行上 RL 只会优化到一个错误的代理目标。
-   ASR 侧倒是有 CER 这种天然奖励，但监督微调已经收敛，RL 的边际收益不足以支撑风险。
+   韵律。没做是因为无法用客观指标验证收益（flow 的改善只能靠听），时间预算内不冒险。
+2. **没做 RL**。方言 TTS 缺少可靠的奖励信号（没有方言判别器、没有可用的发音评分器），
+   强行上 RL 只会优化到一个错误的代理目标。ASR 侧有 CER 这种天然奖励，但监督微调已经收敛，
+   RL 的边际收益不足以支撑风险。

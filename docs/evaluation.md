@@ -175,7 +175,8 @@
 结果：**说话人无关交叉验证准确率只有 0.567**（随机基线 0.5）。不做说话人分组时能到 0.9+，
 但那是在识别「录音通道/说话人」，不是识别方言。
 
-结论：不可用，已从评测删除。脚本保留在 `src/train_clf.py` / `src/check_clf.py` 作为失败记录。
+结论：不可用，已从评测删除。脚本保留在 `src/sichuan_speech/training/dialect_clf.py`
+（`train_kespeech_classifier()` / `evaluate_dialect_classifier()`）作为失败记录。
 
 ### 4.2 s/sh 平翘舌声学检验（不可用）
 

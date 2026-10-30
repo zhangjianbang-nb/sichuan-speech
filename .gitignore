@@ -1,4 +1,39 @@
+# Python
 __pycache__/
-*.pyc
-*.log
-.ipynb_checkpoints/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Project artefacts: weights, generated audio, experiment output
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.parquet
+*.tar
+data/
+exp/
+eval/
+logs/
+tb/
+demo/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Keep the curated demo clips and evaluation JSONs tracked
+!samples/**/*.wav
+!results/*.json

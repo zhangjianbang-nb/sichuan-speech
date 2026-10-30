@@ -1,0 +1,7 @@
+# Runtime for the HTTP service (no torch needed to serve requests only if you
+# already have CosyVoice/SenseVoice installed in the interpreter).
+fastapi>=0.100
+uvicorn>=0.23
+python-multipart>=0.0.6
+numpy>=1.24
+soundfile>=0.12

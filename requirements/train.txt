@@ -1,0 +1,11 @@
+# Fine-tuning / evaluation stack. Pin torch to whatever the CosyVoice checkout
+# supports; the reference run used torch 2.5.1+cu124 on a single RTX 4090.
+torch>=2.0
+torchaudio>=2.0
+funasr>=1.1
+librosa>=0.10
+pyarrow>=14
+scikit-learn>=1.3
+onnxruntime>=1.16
+numpy>=1.24
+soundfile>=0.12

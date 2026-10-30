@@ -1,0 +1,114 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sichuan-speech"
+version = "2.0.0"
+description = "Sichuan dialect TTS (CosyVoice2) and ASR (SenseVoice) fine-tuned on a single RTX 4090"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jianbang Zhang", email = "zhangjianbang_nb@163.com" }]
+keywords = ["speech", "tts", "asr", "sichuan", "dialect", "cosyvoice", "sensevoice"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "numpy>=1.24",
+    "soundfile>=0.12",
+]
+
+[project.optional-dependencies]
+serve = [
+    "fastapi>=0.100",
+    "uvicorn>=0.23",
+    "python-multipart>=0.0.6",
+]
+train = [
+    "torch>=2.0",
+    "torchaudio>=2.0",
+    "funasr>=1.1",
+    "librosa>=0.10",
+    "pyarrow>=14",
+    "scikit-learn>=1.3",
+    "onnxruntime>=1.16",
+]
+dev = [
+    "build>=1.0",
+    "httpx>=0.24",
+    "mypy>=1.8",
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/zhangjianbang-nb/sichuan-speech"
+Repository = "https://github.com/zhangjianbang-nb/sichuan-speech"
+Issues = "https://github.com/zhangjianbang-nb/sichuan-speech/issues"
+
+[project.scripts]
+sichuan-speech = "sichuan_speech.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sichuan_speech*"]
+
+[tool.setuptools.package-data]
+sichuan_speech = ["web/*", "py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+ignore = [
+    "E501",  # long Chinese docstrings/strings; the formatter owns wrapping
+    "RUF001", "RUF002", "RUF003",  # full-width punctuation is intentional in Chinese text
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["sichuan_speech"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/sichuan_speech"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+
+[tool.coverage.run]
+source = ["sichuan_speech"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
