@@ -66,7 +66,29 @@ jobs:
           fi
 
       - name: Pytest
-        run: pytest --cov=sichuan_speech --cov-report=term-missing
+        run: |
+          set +e
+          pytest --cov=sichuan_speech --cov-report=term-missing > pytest.txt 2>&1
+          status=$?
+          cat pytest.txt
+          if [ "$status" -ne 0 ]; then
+            python - <<'PY'
+          import re
+
+          lines = [line.rstrip() for line in open("pytest.txt", encoding="utf-8")]
+          shown = 0
+          for line in lines:
+              match = re.match(r"^(?:FAILED|ERROR) ([^:\s]+)(?:::\S+)?(?: - (.*))?$", line)
+              if match and shown < 50:
+                  reason = match.group(2) or line
+                  print(f"::error file={match.group(1)},line=1::{reason}")
+                  shown += 1
+          if shown == 0:
+              raw = " | ".join(lines[-30:])[:3000]
+              print(f"::error file=.github/workflows/ci.yml,line=1::pytest exit {status}: {raw}")
+          PY
+            exit 1
+          fi
 
       - name: Build sdist + wheel
         run: python -m build
