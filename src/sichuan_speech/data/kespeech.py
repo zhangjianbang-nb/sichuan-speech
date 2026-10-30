@@ -61,9 +61,7 @@ def extract_eval_sets(
     return stats
 
 
-def _dump(
-    output: Path, name: str, items: list[tuple[str, bytes, str]], limit: int
-) -> dict:
+def _dump(output: Path, name: str, items: list[tuple[str, bytes, str]], limit: int) -> dict:
     directory = output / name
     directory.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -72,9 +70,7 @@ def _dump(
         if not path.exists():
             path.write_bytes(payload)
         rows.append({"wav": str(path), "text": transcript})
-    (output / f"{name}.json").write_text(
-        json.dumps(rows, ensure_ascii=False), encoding="utf-8"
-    )
+    (output / f"{name}.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
     logger.info("wrote %s: %d utts", output / f"{name}.json", len(rows))
     return {"n": len(rows), "json": str(output / f"{name}.json")}
 

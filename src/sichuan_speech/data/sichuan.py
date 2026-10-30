@@ -21,7 +21,7 @@ from ..config import Settings
 
 logger = logging.getLogger(__name__)
 
-BRACKETS = str.maketrans({char: None for char in "【】<>「」『』"})
+BRACKETS = str.maketrans(dict.fromkeys("【】<>「」『』"))
 MAGIC_SPEAKER = "spk_chengdu_f"
 
 
@@ -35,7 +35,7 @@ def _duration(path: Path) -> float:
         import soundfile as sf
 
         return float(sf.info(str(path)).duration)
-    except Exception:  # noqa: BLE001 - unreadable file counts as unusable
+    except Exception:
         return 0.0
 
 
@@ -108,7 +108,9 @@ def build_sichuan_manifest(
         "manifest": str(target),
         **counts,
     }
-    logger.info("wrote %s: %d utts / %.2f h (%s)", target, summary["total"], summary["hours"], counts)
+    logger.info(
+        "wrote %s: %d utts / %.2f h (%s)", target, summary["total"], summary["hours"], counts
+    )
     return summary
 
 

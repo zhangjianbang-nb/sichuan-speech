@@ -18,8 +18,8 @@ from __future__ import annotations
 import json
 import logging
 import random
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from ..config import Settings
 from .kaldi import write_kaldi_dir, write_manifest
@@ -126,8 +126,7 @@ def _add_kespeech(settings: Settings, rows: list[list]) -> int:
     eval_ids: set[str] = set()
     if eval_file.exists():
         eval_ids = {
-            Path(row["wav"]).stem
-            for row in json.loads(eval_file.read_text(encoding="utf-8"))
+            Path(row["wav"]).stem for row in json.loads(eval_file.read_text(encoding="utf-8"))
         }
 
     source_dir = settings.data_root / "raw" / "kespeech"
@@ -173,7 +172,11 @@ def _add_thchs(
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError("pyarrow is required for THCHS-30 extraction") from exc
 
-    source = Path(parquet) if parquet else settings.data_root / "raw" / "mandarin" / "thchs_train0.parquet"
+    source = (
+        Path(parquet)
+        if parquet
+        else settings.data_root / "raw" / "mandarin" / "thchs_train0.parquet"
+    )
     if not source.exists():
         logger.warning("THCHS-30 parquet not found at %s; skipping Mandarin replay", source)
         return 0
@@ -218,7 +221,7 @@ def _duration(path: str | Path) -> float:
         import soundfile as sf
 
         return float(sf.info(str(path)).duration)
-    except Exception:  # noqa: BLE001 - unreadable file counts as unusable
+    except Exception:
         return 0.0
 
 

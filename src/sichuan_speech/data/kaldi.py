@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable, Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +49,7 @@ def write_kaldi_dir(directory: str | Path, rows: Iterable[Row]) -> dict:
             handle.write(f"{speaker} {' '.join(utts)}\n")
 
     hours = sum(float(str(row[4])) for row in rows) / 3600.0 if rows else 0.0
-    logger.info(
-        "wrote %s: %d utts, %d speakers, %.2f h", target, len(rows), len(spk2utt), hours
-    )
+    logger.info("wrote %s: %d utts, %d speakers, %.2f h", target, len(rows), len(spk2utt), hours)
     return {"utts": len(rows), "speakers": len(spk2utt), "hours": round(hours, 2)}
 
 
@@ -59,9 +57,7 @@ def write_manifest(path: str | Path, rows: Iterable[Row]) -> Path:
     """Write the JSON manifest used by the training scripts."""
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(
-        json.dumps([list(row) for row in rows], ensure_ascii=False), encoding="utf-8"
-    )
+    target.write_text(json.dumps([list(row) for row in rows], ensure_ascii=False), encoding="utf-8")
     return target
 
 

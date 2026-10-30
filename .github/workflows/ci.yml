@@ -107,5 +107,8 @@ jobs:
           names = zipfile.ZipFile(wheel).namelist()
           assert any(n.endswith("sichuan_speech/web/index.html") for n in names), names
           assert any(n.endswith("sichuan_speech/py.typed") for n in names), names
+          assert any(n.endswith("sichuan_speech/data/manifest.py") for n in names), names
+          assert any(n.endswith("sichuan_speech/evaluation/tts.py") for n in names), names
+          assert any(n.endswith("sichuan_speech/training/asr.py") for n in names), names
           print("wheel ok:", wheel, len(names), "entries")
           PY
