@@ -41,6 +41,12 @@ from .common import (
 logger = logging.getLogger(__name__)
 
 
+def _epoch_number(path: str) -> int:
+    """Sort key for ``epoch_<N>_whole.pt`` files (unparsable names sort first)."""
+    match = re.search(r"epoch_(\d+)", path)
+    return int(match.group(1)) if match else 0
+
+
 def _score_set(
     paths_per_sentence: Sequence[Sequence[Path]],
     references: Sequence[str],
@@ -291,7 +297,7 @@ def sweep_checkpoints(
 
     checkpoints = sorted(
         glob.glob(str(checkpoint_directory / "epoch_*_whole.pt")),
-        key=lambda path: int(re.search(r"epoch_(\d+)", path).group(1)),
+        key=_epoch_number,
     )
     candidates: list[tuple[str, str | None]] = [("base", None)] + [
         (Path(path).name.replace("_whole.pt", ""), path) for path in checkpoints

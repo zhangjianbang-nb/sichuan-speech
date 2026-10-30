@@ -105,6 +105,7 @@ class SpeechService:
     def _engine(self, name: str) -> Any:
         with self._lock:
             if name not in self._engines:
+                engine: Any
                 if name == "sft":
                     engine = self._tts_factory(self.settings.sft_model_dir)
                 elif name == "base":

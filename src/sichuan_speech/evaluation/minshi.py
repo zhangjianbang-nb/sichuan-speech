@@ -215,13 +215,13 @@ def evaluate_minshi(
         for take in range(n_takes):
             torch.manual_seed(2000 + take)
             np.random.seed(2000 + take)
-            stream = (
-                engine.model.inference_sft(TONGUE_TWISTER, spk, stream=False)
-                if spk
-                else engine.model.inference_zero_shot(
+            if spk:
+                stream = engine.model.inference_sft(TONGUE_TWISTER, spk, stream=False)
+            else:
+                assert prompt is not None
+                stream = engine.model.inference_zero_shot(
                     TONGUE_TWISTER, prompt[0], prompt[1], stream=False
                 )
-            )
             wav = np.concatenate([chunk["tts_speech"].squeeze().cpu().numpy() for chunk in stream])
             path = tongue_dir / f"{tag}_{take}.wav"
             write_wav(path, wav, engine.sample_rate)
