@@ -1,5 +1,9 @@
 # 四川方言语音模型：让 CosyVoice2 会说川话、让 SenseVoice 听得懂川话
 
+[![CI](https://github.com/zhangjianbang-nb/sichuan-speech/actions/workflows/ci.yml/badge.svg)](https://github.com/zhangjianbang-nb/sichuan-speech/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 在单张 RTX 4090（24 GB）上，用 9.12 小时开源川话语料，把普通话 TTS 和 ASR 迁移成四川方言，
 并保持普通话能力不退化。仓库包含完整数据流水线、训练与评测脚本、踩坑记录、可直接调用的
 HTTP 服务，以及一个不依赖任何 CDN 的浏览器界面。
