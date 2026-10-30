@@ -16,6 +16,7 @@ import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from .audio import concat_wavs, write_wav
 from .client import SpeechApiError, SpeechClient
@@ -102,7 +103,7 @@ def run_batch(
     dialect_base = sum(r.cer_base for r in dialect_rows) / len(dialect_rows)
     exact = sum(1 for r in dialect_rows if r.cer_ft == 0.0)
 
-    summary = {
+    summary: dict[str, Any] = {
         "n_samples": n_samples,
         "n": count,
         "mean_cer_ft": round(mean_ft, 4),

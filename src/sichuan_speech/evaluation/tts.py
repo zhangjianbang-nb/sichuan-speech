@@ -64,7 +64,7 @@ def _score_set(
                 }
             )
     flat = [path for paths in paths_per_sentence for path in paths]
-    result = {
+    result: dict[str, Any] = {
         "mean_cer": round(total_errors / max(1, total_chars), 4),
         "acoustic": aggregate([acoustic_features(path) for path in flat]),
         "rows": rows,

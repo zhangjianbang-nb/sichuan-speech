@@ -35,7 +35,7 @@ from ..config import Settings
 
 logger = logging.getLogger(__name__)
 
-PROFILES = {
+PROFILES: dict[str, dict[str, Any]] = {
     "round2": {
         "epochs": 4,
         "lr": 4e-6,

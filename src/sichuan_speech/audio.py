@@ -15,6 +15,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from math import gcd
 from pathlib import Path
 
@@ -58,9 +59,8 @@ def load_audio(
     Returns ``(samples, sample_rate)``. When ``target_sr`` is given the audio is
     resampled to it.
     """
-    data = source if isinstance(source, (bytes, bytearray)) else None
-    if data is not None:
-        wav, sr = _decode_bytes(bytes(data))
+    if isinstance(source, (bytes, bytearray)):
+        wav, sr = _decode_bytes(bytes(source))
     else:
         path = Path(source)
         if not path.exists():
@@ -197,7 +197,7 @@ def write_wav(
 
 
 def concat_wavs(
-    paths: list[str | Path],
+    paths: Sequence[str | Path],
     *,
     gap_s: float = 0.35,
     sample_rate: int | None = None,
