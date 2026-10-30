@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import tomllib
@@ -51,6 +52,16 @@ def test_web_ui_references_local_assets_only():
     index = (web_dir() / "index.html").read_text(encoding="utf-8")
     assert 'href="/static/style.css"' in index
     assert 'src="/static/app.js"' in index
+
+
+def test_every_id_used_by_app_js_exists_in_html():
+    """A missing id used to break the ASR panel silently (drop-sub regression)."""
+    index = (web_dir() / "index.html").read_text(encoding="utf-8")
+    app = (web_dir() / "app.js").read_text(encoding="utf-8")
+    declared = set(re.findall(r'id="([^"]+)"', index))
+    used = set(re.findall(r'\$\("([^"]+)"\)', app))
+    missing = sorted(used - declared)
+    assert not missing, f"app.js looks up ids absent from index.html: {missing}"
     assert 'href="/static/favicon.svg"' in index
 
 
